@@ -6,7 +6,10 @@ Content is *highly unstable*. Please, don't use in production.
 
 Status:
 - Hetzner Cloud is working
-- AWS in progress
+- AWS in working
 - Azure postponed at the moment
+- GCP postponed at the moment
 
-You can also run checks locally with `act -P ubuntu-latest=node:12.6-buster` using [`act`](https://github.com/nektos/act).
+# GitHub CI
+
+You can run checks locally with `make` or `act -P ubuntu-latest=node:12.6-buster` using [`act`](https://github.com/nektos/act).
