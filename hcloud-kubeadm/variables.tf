@@ -1,13 +1,24 @@
-variable "hcloud_token" {}
-variable "hcloud_csi_token" {}
+variable "hcloud_token" {
+  type        = string
+  description = "HCloud API token. Create a project in https://console.hetzner.cloud - open project -> go to security -> API Tokens and GENERATE API TOKEN. Make sure it is read/write token."
+}
 
-variable "hetzner_location" { default = "hel1" }
+variable "hcloud_csi_token" {
+  type        = string
+  description = "HCloud API token. Create a project in https://console.hetzner.cloud - open project -> go to security -> API Tokens and GENERATE API TOKEN. Make sure it is read/write token. Can be the same as hcloud_token."
+}
 
-variable "node_count" { default = 2 }
+variable "hetzner_location" {
+  type        = string
+  description = "Default datacenter to place cloud servers into. Hetzner currently supports hel1, nbg1, fsn1."
+  default     = "hel1"
+}
 
-# terraform provisioner remote-exec sometimes need a file, it's uploaded into
-# server_upload_dir first
-variable "server_upload_dir" { default = "/root/tf-upload" }
+variable "node_count" {
+  type        = number
+  description = "Number of kubernetes worker nodes. Mayastor is deployed in a way that it creates replica on each node."
+  default     = 2
+}
 
 variable "hugepages_2M_amount" {
   description = "Amount of 2M hugepages to enable system-wide; mayastor requires at least 512 2M hugepages for itself"
@@ -17,8 +28,19 @@ variable "hugepages_2M_amount" {
 variable "admin_ssh_keys" {
   description = "Map of maps for configuring ssh keys. Keys are key names in hcloud values are maps with either key_file which is read or key_data which is used verbatim."
   default = {
-    "key1" : { "key_file" = "~/.ssh/id_ed25519.pub" },
-    "key2" : { "key_data" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMQCA+Slye+ZcgLRxdIyQCpEcG/XKKwyxpRWuCSpS098 email@example.com" },
+    "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
   }
+}
+
+variable "mayastor_use_develop_images" {
+  type        = bool
+  description = "Deploy 'develop' version of Mayastor instead of latest release. Beware, here be dragons!"
+  default     = false
+}
+
+variable "server_upload_dir" {
+  type        = string
+  description = "Terraform provisioner remote-exec sometimes need to put files to a remote machine. It's uploaded into server_upload_dir."
+  default     = "/root/tf-upload"
 }
 

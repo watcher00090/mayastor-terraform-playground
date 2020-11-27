@@ -6,6 +6,8 @@
 [ ] [checkov](https://github.com/bridgecrewio/checkov)
 [ ] symlink shared modules (i.e. mayastor deploy) - or rather use one top-level terraform and select cloud using variables? (as windows users will have problems with symlinks)
 
+See also `hcloud-kubeadm/TODO.md` and TODO section of `aws-kubeadm/README.md`.
+
 # mayastor
 
 - install mayastor client for people to play with

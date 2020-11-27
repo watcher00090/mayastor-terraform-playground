@@ -35,13 +35,19 @@ variable "allowed_k8s_cidr_blocks" {
 variable "master_instance_type" {
   type        = string
   description = "EC2 instance type for the master node (must have at least 2 CPUs)."
-  default     = "t2.medium"
+  default     = "t3.medium"
 }
 
 variable "worker_instance_type" {
   type        = string
   description = "EC2 instance type for the worker nodes."
-  default     = "t2.small"
+  default     = "t3.medium"
+}
+
+variable "worker_instance_type_develop" {
+  type        = string
+  description = "EC2 instance type for the worker nodes for develop deploy of mayastor (requires more than 2 cores)."
+  default     = "t3.xlarge"
 }
 
 variable "num_workers" {
@@ -92,4 +98,9 @@ variable "ebs_volume_size" {
   type        = number
   description = "Additional EBS volume size to attach to EC2 instance on workers in gigabytes."
   default     = 5
+}
+
+variable "mayastor_use_develop_images" {
+  type        = bool
+  description = "Use 'develop' tag for mayastor images instead of 'latest' (selects different EC2 instance)."
 }

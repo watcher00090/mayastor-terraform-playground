@@ -15,7 +15,7 @@ cluster_name = "mayastor-test"
 tags = {"jenkins-job":"123"}
 ```
 
-Check the `ssh_public_keys` variable to set up access to EC2 instances. You **must** configure at least one key (or have default public key `~/.ssh/id_rsa.pub` available).
+Check the `ssh_public_keys` variable to set up access to EC2 instances. You **must** configure at least one key named `key1` which is of RSA type (this is AWS limitation). (Default uses public key from `~/.ssh/id_rsa.pub` which suits most users).
 
 ## Steps
 
@@ -37,6 +37,8 @@ kubectl exec -it fio-mayastor -- fio --name=benchtest --size=800m --filename=/vo
 
 To destroy the whole cluster run: `terraform destroy`. (Make sure you've deleted fio pod, otherwise destroy will hang/fail: `kubectl delete -f test-pod-fio-mayastor.yaml`.)
 
+You can also run `./bin/destroy-quick` which is faster due to skipping destroying resources that will be destroyed implicitly with tear down of the VMs.
+
 ## TODO
 
 * Use [aws-vpc](https://github.com/coreos/flannel/blob/v0.13.0/Documentation/aws-vpc-backend.md) flannel backend instead of overlay network.
@@ -51,6 +53,8 @@ To destroy the whole cluster run: `terraform destroy`. (Make sure you've deleted
 * Create destroy-quick script that will remove terraform state for all resources except k8s module as they will obviously get destroyed with infra.
 * Deploy test fio pod by default (set by variable similar to `deploy_mayastor`)
 * Move additional EBS allocation from `k8s` to `mayastor-dependencies` module
+* Rename worker to node (for EC2 instances) to keep k8s terminology.
+* Install metrics server (see `hcloud-kubeadm/modules/k8s/install-metrics-server.tf`)
 
 # Acknowledgements
 

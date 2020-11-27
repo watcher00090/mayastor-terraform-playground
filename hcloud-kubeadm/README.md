@@ -27,7 +27,7 @@ Make sure at least one ssh key configured in step 2 below is available via ssh a
 In top-level directory of this project (not repo!) - the one containing this README:
 
 1. `terraform init`
-2. Create `terraform.tfvars` file in the top-level directory with at least following contents (feel free to create more nodes; mayastor will use additional nodes for replication automatically). Update `admin_ssh_keys`. You can also use `key_data` instead of `key_file` to specify key verbatim.
+2. Create `terraform.tfvars` file in the top-level directory with at least following contents (feel free to create more nodes; mayastor will use additional nodes for replication automatically and your volumes will have _as many replicas as your node count_). Update `admin_ssh_keys`. You can also use `key_data` instead of `key_file` to specify key verbatim.
 
 ```
 hcloud_token     = "<hcloud_r/w_api_token>"
@@ -116,6 +116,10 @@ kubectl delete pv <pv-id-from-previous-command>
 ```
 
 ### TODO: Examples of playing with various tunables in mayastor
+
+## Destroying infrastructure
+
+You can normally use `terraform destroy` to tear down everything. If you're in hurry and really want to destroy everything use `./bin/destroy-quick` it will skip destroying terraform resources which will be implicitly destroyed with other resources (e.g. you don't need to destroy kubernetes deployments if you're taking down the whole cluster).
 
 # Architecture
 

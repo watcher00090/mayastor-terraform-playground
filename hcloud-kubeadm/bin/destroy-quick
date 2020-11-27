@@ -1,0 +1,30 @@
+#! /bin/sh -e
+
+# Use this script to delete whole infra quickly
+
+# There are resources set up by terraform inside kubernetes cluster. If we know
+# we are destroying whole infrastructure we don't need to destroy them
+# gracefully.
+
+# This script will just drop resources that do not need to be destroyed from
+# terraform state and run destroy on the resources that need it (e.g. servers,
+# ...)
+
+printf "Do you want to destroy whole infrastructure? [y/N]: "
+read -r REPLY
+
+if [ "$REPLY" = "Y" ] || [ "$REPLY" = "y" ]; then
+	(
+		cd "$(dirname "$0")/.."
+		terraform state rm module.mayastor || true
+		terraform state rm module.k8s.null_resource.flannel || true
+		terraform state rm module.k8s.null_resource.metrics_server || true
+		terraform state rm module.k8s.null_resource.hcloud_csi || true
+		terraform state rm module.k8s.null_resource.cluster_firewall_node || true
+		terraform destroy -auto-approve
+	)
+else
+	echo "Phew... Good thing I've asked. Exiting without destroying anything"
+	exit 0
+fi
+

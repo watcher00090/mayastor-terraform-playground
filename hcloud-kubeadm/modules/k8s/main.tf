@@ -53,6 +53,7 @@ resource "hcloud_server" "master" {
 
   provisioner "remote-exec" {
     inline = [
+      "set -xve",
       "chmod +x \"${var.server_upload_dir}/bootstrap.sh\" \"${var.server_upload_dir}/master.sh\"",
       "\"${var.server_upload_dir}/bootstrap.sh\"",
       "\"${var.server_upload_dir}/master.sh\"",
@@ -98,6 +99,7 @@ resource "hcloud_server" "node" {
   }
   provisioner "remote-exec" {
     inline = [
+      "set -xve",
       "chmod +x \"${var.server_upload_dir}/hugepages.sh\"",
       "\"${var.server_upload_dir}/hugepages.sh\"",
     ]
@@ -129,6 +131,7 @@ resource "hcloud_server" "node" {
 
   provisioner "remote-exec" {
     inline = [
+      "set -xve",
       "chmod +x \"${var.server_upload_dir}/bootstrap.sh\"",
       "\"${var.server_upload_dir}/bootstrap.sh\"",
       "eval $(cat ${var.server_upload_dir}/kubeadm_join) && systemctl enable docker kubelet",
@@ -159,6 +162,7 @@ resource "null_resource" "cluster_firewall_master" {
 
   provisioner "remote-exec" {
     inline = [
+      "set -xve",
       "chmod +x \"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
       "\"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
     ]
@@ -191,6 +195,7 @@ resource "null_resource" "cluster_firewall_node" {
 
   provisioner "remote-exec" {
     inline = [
+      "set -xve",
       "chmod +x \"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
       "\"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
     ]

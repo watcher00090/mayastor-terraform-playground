@@ -181,7 +181,7 @@ resource "aws_instance" "master" {
 resource "aws_instance" "workers" {
   count                       = var.num_workers
   ami                         = data.aws_ami.ubuntu.image_id
-  instance_type               = var.worker_instance_type
+  instance_type               = var.mayastor_use_develop_images ? var.worker_instance_type_develop : var.worker_instance_type
   subnet_id                   = aws_subnet.main.id
   associate_public_ip_address = true
   key_name                    = aws_key_pair.main.key_name

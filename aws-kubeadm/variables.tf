@@ -22,7 +22,7 @@ variable "num_workers" {
 // }
 variable "ssh_public_keys" {
   type        = map
-  description = "Map of maps of public ssh keys. See variables.tf for full example. Default is ~/.ssh/id_rsa.pub"
+  description = "Map of maps of public ssh keys. See variables.tf for full example. Default is ~/.ssh/id_rsa.pub. Due to AWS limitations you **have** to have one key named 'key1' which is RSA key."
   default = {
     "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
   }
@@ -31,25 +31,13 @@ variable "ssh_public_keys" {
 variable "cluster_name" {
   type        = string
   description = "Name of the cluster. Used as a part of AWS names and tags of various cluster components."
-  default     = null
+  default     = "mayastor-tf-playground"
 }
 
 variable "tags" {
   type        = map
   description = "A set of tags to assign to the created AWS resources. These tags will be assigned in addition to the default tags. The default tags include \"terraform-kubeadm:cluster\" which is assigned to all resources and whose value is the cluster name, and \"terraform-kubeadm:node\" which is assigned to the EC2 instances and whose value is the name of the Kubernetes node that this EC2 corresponds to."
   default     = {}
-}
-
-variable "master_instance_type" {
-  type        = string
-  description = "AWS instance type for master node."
-  default     = "t3.medium"
-}
-
-variable "worker_instance_type" {
-  type        = string
-  description = "AWS instance type for worker node."
-  default     = "t3.medium"
 }
 
 variable "flannel_version" {
@@ -82,3 +70,8 @@ variable "ebs_volume_size" {
   default     = 5
 }
 
+variable "mayastor_use_develop_images" {
+  type        = bool
+  description = "Use 'develop' tag for mayastor images instead of 'latest'"
+  default     = false
+}

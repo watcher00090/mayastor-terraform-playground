@@ -3,7 +3,7 @@
 set -eu
 
 # make sure nvme-tcp module is available
-apt-get update
+apt-get -qq update
 apt-get install -qq -y "linux-modules-extra-$(uname -r)"
 # and make sure nvme-tcp modules is loaded on boot
 echo nvme-tcp >> /etc/modules-load.d/mayadata-nvme-tcp.conf
