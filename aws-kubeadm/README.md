@@ -41,6 +41,7 @@ You can also run `./bin/destroy-quick` which is faster due to skipping destroyin
 
 ## TODO
 
+* Check that cluster can be grown by adding nodes / changing `num_workers`
 * Use [aws-vpc](https://github.com/coreos/flannel/blob/v0.13.0/Documentation/aws-vpc-backend.md) flannel backend instead of overlay network.
 * Upload and run scripts instead of passing script in user data - this greatly enhances debugability and allows operator to re-run and check what failed. (Like `../hcloud-kubeadm` does)
 * Validate how problematic is --discovery-token-unsafe-skip-ca-verification in kubeadm join
