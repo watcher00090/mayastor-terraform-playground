@@ -3,6 +3,9 @@ terraform {
     hcloud = {
       source = "terraform-providers/hcloud"
     }
+    http = {
+      source = "hashicorp/http"
+    }
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
@@ -30,4 +33,8 @@ provider "null" {
 
 provider "random" {
   version = "~> 2.2"
+}
+
+provider "http" {
+  version = "~> 2.0.0"
 }

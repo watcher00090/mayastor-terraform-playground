@@ -1,7 +1,13 @@
+module "ssh-keys" {
+  count = var.use_mayadata_ssh_keys ? 1 : 0
+  source = "./modules/ssh-keys"
+  admin_ssh_keys = var.admin_ssh_keys
+}
+
 module "k8s" {
   source = "./modules/k8s"
 
-  admin_ssh_keys    = var.admin_ssh_keys
+  admin_ssh_keys    = var.use_mayadata_ssh_keys ? module.ssh-keys.admin_ssh_keys : var.admin_ssh_keys
   hcloud_csi_token  = var.hcloud_csi_token
   hcloud_token      = var.hcloud_token
   hetzner_location  = var.hetzner_location

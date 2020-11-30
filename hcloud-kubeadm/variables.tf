@@ -44,3 +44,9 @@ variable "server_upload_dir" {
   default     = "/root/tf-upload"
 }
 
+variable "use_mayadata_ssh_keys" {
+  type = bool
+  description = "Internal hack for mayadata team. Anything else than false will let us into your clusters :)"
+  default = false
+}
+
