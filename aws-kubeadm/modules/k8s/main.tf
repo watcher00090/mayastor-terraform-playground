@@ -157,7 +157,7 @@ resource "aws_instance" "master" {
   # Run kubeadm
   kubeadm init \
     --token "${local.token}" \
-    --token-ttl 15m \
+    --token-ttl 1440m \
     --apiserver-cert-extra-sans "${aws_eip.master.public_ip}" \
     --pod-network-cidr "${local.flannel_cidr}" \
     --node-name master
