@@ -112,6 +112,11 @@ echo 'set mouse=' > /root/.vimrc
 echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
 systemctl restart sshd
 
+apt-get -qy install \
+%{for install_package in install_packages~}
+	${install_package} \
+%{endfor~}
+
 # install docker
 echo "
 Package: docker-ce

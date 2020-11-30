@@ -56,6 +56,8 @@ You can also run `./bin/destroy-quick` which is faster due to skipping destroyin
 * Move additional EBS allocation from `k8s` to `mayastor-dependencies` module
 * Rename worker to node (for EC2 instances) to keep k8s terminology.
 * Install metrics server (see `hcloud-kubeadm/modules/k8s/install-metrics-server.tf`)
+* When developing terraform and master/node creation fails due to `user_data` script failure subsequent `terraform apply` runs will not fix it as instances are "done" and only `wait_for_bootstrap_to_finish` resource is recreated. One has to manually destroy `aws_instance` resources to fix.
+* Remove sleep 10 in mayastor deployment and instead wait for readiness of `msn` and `msp` resources.
 
 # Acknowledgements
 

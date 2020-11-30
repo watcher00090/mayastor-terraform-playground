@@ -37,6 +37,7 @@ resource "hcloud_server" "master" {
   provisioner "file" {
     content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
+      install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
     })
@@ -118,6 +119,7 @@ resource "hcloud_server" "node" {
   provisioner "file" {
     content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
+      install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
     })

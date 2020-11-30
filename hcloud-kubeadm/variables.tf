@@ -44,3 +44,15 @@ variable "server_upload_dir" {
   default     = "/root/tf-upload"
 }
 
+variable "install_packages" {
+  type        = list
+  description = "Additional deb packages to install during instance bootstrap."
+  default = [
+    "fio",
+    "iotop",
+    "nvme-cli",
+    "strace",
+    "sysstat",
+    "tcpdump",
+  ]
+}

@@ -8,6 +8,8 @@ module "k8s" {
   node_count        = var.node_count
   server_upload_dir = var.server_upload_dir
 
+  install_packages = var.install_packages
+
   hugepages_2M_amount = var.hugepages_2M_amount
 
 }

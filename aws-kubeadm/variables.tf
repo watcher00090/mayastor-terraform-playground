@@ -75,3 +75,16 @@ variable "mayastor_use_develop_images" {
   description = "Use 'develop' tag for mayastor images instead of 'latest'"
   default     = false
 }
+
+variable "install_packages" {
+  type        = list
+  description = "Additional deb packages to install during instance bootstrap."
+  default = [
+    "fio",
+    "iotop",
+    "nvme-cli",
+    "strace",
+    "sysstat",
+    "tcpdump",
+  ]
+}

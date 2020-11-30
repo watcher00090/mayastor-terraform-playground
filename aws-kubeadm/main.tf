@@ -13,6 +13,7 @@ module "k8s" {
 
   tags = var.tags
 
+  install_packages            = var.install_packages
   mayastor_use_develop_images = var.mayastor_use_develop_images
 }
 

@@ -5,6 +5,8 @@ set -eu
 # make sure nvme-tcp module is available
 apt-get -qq update
 apt-get install -qq -y "linux-modules-extra-$(uname -r)"
+# install newer kernel & wait for reboot below
+apt-get install -qq -y "linux-modules-extra-5.8.0-29-generic"
 # and make sure nvme-tcp modules is loaded on boot
 echo nvme-tcp >> /etc/modules-load.d/mayadata-nvme-tcp.conf
 

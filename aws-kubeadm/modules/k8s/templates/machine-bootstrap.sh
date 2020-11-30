@@ -15,6 +15,13 @@ echo '${lookup(ssh_public_key, "key_file", "__missing__") == "__missing__" ? tri
 echo '${lookup(ssh_public_key, "key_file", "__missing__") == "__missing__" ? trimspace(lookup(ssh_public_key, "key_data")) : trimspace(file(lookup(ssh_public_key, "key_file")))}' | sudo tee -a /root/.ssh/authorized_keys
 %{endfor~}
 
+# Install additional packages requested by configuration
+apt-get -q update
+apt-get -qy install \
+%{for install_package in install_packages~}
+	${install_package} \
+%{endfor~}
+
 # Install kubeadm and Docker
 echo "
 Package: docker-ce

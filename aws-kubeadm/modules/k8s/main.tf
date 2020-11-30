@@ -113,6 +113,7 @@ locals {
 # EC2 instances
 #------------------------------------------------------------------------------#
 
+# NOTE: ../mayastor-dependencies/main.tf installs kernel. Change when changing image!
 data "aws_ami" "ubuntu" {
   owners      = ["099720109477"] # AWS account ID of Canonical
   most_recent = true
@@ -149,6 +150,7 @@ resource "aws_instance" "master" {
   ${templatefile("${path.module}/templates/machine-bootstrap.sh", {
   docker_version : var.docker_version,
   hostname : "${var.cluster_name}-master",
+  install_packages : var.install_packages,
   kubernetes_version : var.kubernetes_version,
   ssh_public_keys : var.ssh_public_keys,
   user : "ubuntu",
@@ -206,6 +208,7 @@ resource "aws_instance" "workers" {
   ${templatefile("${path.module}/templates/machine-bootstrap.sh", {
   docker_version : var.docker_version,
   hostname : "${var.cluster_name}-worker-${count.index}",
+  install_packages : var.install_packages,
   kubernetes_version : var.kubernetes_version,
   ssh_public_keys : var.ssh_public_keys,
   user : "ubuntu",

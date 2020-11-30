@@ -25,3 +25,5 @@ variable "pod_network_cidr" { default = "10.244.0.0/16" }
 variable "metrics_server_version" { default = "0.3.7" }
 
 variable "hugepages_2M_amount" {}
+
+variable "install_packages" { description = "Additional deb packages to install during instance bootstrap." }
