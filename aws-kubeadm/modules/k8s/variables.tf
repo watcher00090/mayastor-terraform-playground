@@ -41,12 +41,6 @@ variable "master_instance_type" {
 variable "worker_instance_type" {
   type        = string
   description = "EC2 instance type for the worker nodes."
-  default     = "t3.medium"
-}
-
-variable "worker_instance_type_develop" {
-  type        = string
-  description = "EC2 instance type for the worker nodes for develop deploy of mayastor (requires more than 2 cores)."
   default     = "t3.xlarge"
 }
 
