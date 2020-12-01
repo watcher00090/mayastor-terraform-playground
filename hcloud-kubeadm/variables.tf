@@ -56,3 +56,14 @@ variable "install_packages" {
     "tcpdump",
   ]
 }
+
+# Note: cannot use null as a default as validation doesn't like it
+variable "mayastor_replicas" {
+  type        = number
+  default     = -1
+  description = "How many replicas should mayastor default storageclass use? Leave default to use mayastor_replicas == number of cluster nodes. For mayastor_replicas > number of cluster nodes mayastor **will not start**."
+  validation {
+    condition     = (var.mayastor_replicas == -1) || (var.mayastor_replicas >= 1)
+    error_message = "The mayastor_replicas must be greater or equal to 1."
+  }
+}

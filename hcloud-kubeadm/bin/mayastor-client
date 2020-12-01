@@ -1,0 +1,18 @@
+#! /bin/sh -e
+
+# SYNOPSIS: mayastor-client [<argument> ...]
+
+# run mayastor-cli that is (probably by omission) included in mayastor-csi this
+# might stop working at any moment. If you need this, please create an issue
+
+# NOTE: this is run *inside* the cluster with all consequences (e.g. for
+# networking)
+
+. "$(dirname "$0")"/export-kubeconfig.sh
+
+first_running_mayastor_csi_pod=$(kubectl -n mayastor get pods -l app=mayastor-csi | grep Running | head -1 | awk '{ print $1 }')
+
+# there's something strange with shell in nix and I cannot make it work with glob in command name
+mayastor_cli_with_path=$(kubectl -n mayastor exec pod/${first_running_mayastor_csi_pod} --container mayastor-csi -- sh -c 'ls /nix/store/*-mayastor/bin/mayastor-client')
+kubectl exec -n mayastor -ti pod/${first_running_mayastor_csi_pod} --container mayastor-csi -- ${mayastor_cli_with_path} "$@"
+

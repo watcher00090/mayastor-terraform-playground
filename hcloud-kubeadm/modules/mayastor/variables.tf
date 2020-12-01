@@ -7,3 +7,5 @@ variable "node_names" {}
 variable "mayastor_disk" {}
 
 variable "mayastor_use_develop_images" {}
+
+variable "mayastor_replicas" {}

@@ -1,3 +1,17 @@
+# variable validators cannot reference other variables, let's validate relation
+# between mayastor_replicas and number of cluster nodes here
+resource "null_resource" "validate_replica_count" {
+  provisioner "local-exec" {
+    command = <<-EOF
+    set -e
+    if [ "${var.mayastor_replicas}" -gt "${length(var.node_names)}" ]; then
+      echo "Variable mayastor_replicas cannot be greater than number of cluster nodes"
+      exit 1
+    fi
+    EOF
+  }
+}
+
 resource "null_resource" "server_upload_dir" {
   triggers = {
     k8s_master_ip     = var.k8s_master_ip
@@ -126,11 +140,11 @@ resource "null_resource" "mayastor-pool-local" {
 }
 
 resource "null_resource" "mayastor-storageclass-nvme" {
-  depends_on = [null_resource.mayastor-pool-local]
+  depends_on = [null_resource.mayastor-pool-local, null_resource.validate_replica_count]
   triggers = {
     k8s_master_ip = var.k8s_master_ip
     mayastor_storageclass_local_yaml = templatefile("${path.module}/templates/mayastor-storageclass-nvme.yaml", {
-      replicas = length(var.node_names),
+      replicas = var.mayastor_replicas == -1 ? length(var.node_names) : var.mayastor_replicas,
     }),
     server_upload_dir = var.server_upload_dir
   }

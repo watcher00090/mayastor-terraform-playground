@@ -22,9 +22,22 @@ variable "num_workers" {
 // }
 variable "ssh_public_keys" {
   type        = map
-  description = "Map of maps of public ssh keys. See variables.tf for full example. Default is ~/.ssh/id_rsa.pub. Due to AWS limitations you **have** to have one key named 'key1' which is RSA key."
+  description = "Map of maps of public ssh keys. See variables.tf for full example. Default is ~/.ssh/id_rsa.pub. Due to AWS limitations you **have** to have one key named 'key1' which is a RSA key."
   default = {
     "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
+  }
+  validation {
+    condition = (
+      (lookup(var.ssh_public_keys, "key1", "__missing__") != "__missing__") &&
+      (
+        (
+          lookup(lookup(var.ssh_public_keys, "key1"), "key_file", "__missing__") == "__missing__" ? false : length(regexall("^ssh-rsa .*", file(lookup(lookup(var.ssh_public_keys, "key1"), "key_file")))) > 0
+          ) || (
+          lookup(lookup(var.ssh_public_keys, "key1"), "key_data", "__missing__") == "__missing__" ? false : length(regexall("^ssh-rsa .*", lookup(lookup(var.ssh_public_keys, "key1"), "key_data"))) > 0
+        )
+      )
+    )
+    error_message = "For AWS ssh_public_keys variable must contain key named `key1` with an RSA key."
   }
 }
 
@@ -87,4 +100,15 @@ variable "install_packages" {
     "sysstat",
     "tcpdump",
   ]
+}
+
+# Note: cannot use null as a default as validation doesn't like it
+variable "mayastor_replicas" {
+  type        = number
+  default     = -1
+  description = "How many replicas should mayastor default storageclass use? Leave default to use mayastor_replicas == number of cluster nodes. For mayastor_replicas > number of cluster nodes mayastor **will not start**."
+  validation {
+    condition     = (var.mayastor_replicas == -1) || (var.mayastor_replicas >= 1)
+    error_message = "The mayastor_replicas must be greater or equal to 1."
+  }
 }
