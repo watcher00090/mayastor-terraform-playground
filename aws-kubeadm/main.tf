@@ -18,7 +18,6 @@ module "k8s" {
 }
 
 module "mayastor-dependencies" {
-  count  = var.deploy_mayastor ? 1 : 0
   source = "./modules/mayastor-dependencies"
   workers = {
     for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) :
