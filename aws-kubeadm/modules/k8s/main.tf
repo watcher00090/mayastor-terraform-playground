@@ -164,6 +164,8 @@ resource "aws_instance" "master" {
     --pod-network-cidr "${local.flannel_cidr}" \
     --node-name master
 
+  systemctl enable docker kubelet
+
   # Prepare kubeconfig file for download to local machine
   mkdir -p /home/ubuntu/.kube
   cp /etc/kubernetes/admin.conf /home/ubuntu
@@ -219,6 +221,8 @@ resource "aws_instance" "workers" {
     --token ${local.token} \
     --discovery-token-unsafe-skip-ca-verification \
     --node-name worker-${count.index}
+
+  systemctl enable docker kubelet
 
   # Indicate completion of bootstrapping on this node
   touch /home/ubuntu/done
