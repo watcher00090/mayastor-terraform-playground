@@ -24,20 +24,7 @@ variable "ssh_public_keys" {
   type        = map
   description = "Map of maps of public ssh keys. See variables.tf for full example. Default is ~/.ssh/id_rsa.pub. Due to AWS limitations you **have** to have one key named 'key1' which is a RSA key."
   default = {
-    "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
-  }
-  validation {
-    condition = (
-      (lookup(var.ssh_public_keys, "key1", "__missing__") != "__missing__") &&
-      (
-        (
-          lookup(lookup(var.ssh_public_keys, "key1"), "key_file", "__missing__") == "__missing__" ? false : length(regexall("^ssh-rsa .*", file(lookup(lookup(var.ssh_public_keys, "key1"), "key_file")))) > 0
-          ) || (
-          lookup(lookup(var.ssh_public_keys, "key1"), "key_data", "__missing__") == "__missing__" ? false : length(regexall("^ssh-rsa .*", lookup(lookup(var.ssh_public_keys, "key1"), "key_data"))) > 0
-        )
-      )
-    )
-    error_message = "For AWS ssh_public_keys variable must contain key named `key1` with an RSA key."
+    "key1" = { "key_file" = "~/.ssh/id_rsa.pub" },
   }
 }
 
