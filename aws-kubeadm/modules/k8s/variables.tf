@@ -100,7 +100,7 @@ variable "mayastor_use_develop_images" {
 }
 
 variable "install_packages" {
-  type        = list
+  type        = list(any)
   description = "Additional deb packages to install during instance bootstrap."
   default = [
     "fio",

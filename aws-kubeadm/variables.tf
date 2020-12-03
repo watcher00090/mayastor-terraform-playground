@@ -21,7 +21,7 @@ variable "num_workers" {
 //     "key2" : { "key_data" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMQCA+Slye+ZcgLRxdIyQCpEcG/XKKwyxpRWuCSpS098 email@example.com" },
 // }
 variable "ssh_public_keys" {
-  type        = map
+  type        = map(map(string))
   description = "Map of maps of public ssh keys. See variables.tf for full example. Default is ~/.ssh/id_rsa.pub. Due to AWS limitations you **have** to have one key named 'key1' which is a RSA key."
   default = {
     "key1" = { "key_file" = "~/.ssh/id_rsa.pub" },
@@ -35,7 +35,7 @@ variable "cluster_name" {
 }
 
 variable "tags" {
-  type        = map
+  type        = map(string)
   description = "A set of tags to assign to the created AWS resources. These tags will be assigned in addition to the default tags. The default tags include \"terraform-kubeadm:cluster\" which is assigned to all resources and whose value is the cluster name, and \"terraform-kubeadm:node\" which is assigned to the EC2 instances and whose value is the name of the Kubernetes node that this EC2 corresponds to."
   default     = {}
 }
@@ -77,7 +77,7 @@ variable "mayastor_use_develop_images" {
 }
 
 variable "install_packages" {
-  type        = list
+  type        = list(string)
   description = "Additional deb packages to install during instance bootstrap."
   default = [
     "fio",
@@ -95,7 +95,7 @@ variable "mayastor_replicas" {
   default     = -1
   description = "How many replicas should mayastor default storageclass use? Leave default to use mayastor_replicas == number of cluster nodes. For mayastor_replicas > number of cluster nodes mayastor **will not start**."
   validation {
-    condition     = (var.mayastor_replicas == -1) || (var.mayastor_replicas >= 1)
+    condition     = var.mayastor_replicas == -1 || var.mayastor_replicas >= 1
     error_message = "The mayastor_replicas must be greater or equal to 1."
   }
 }

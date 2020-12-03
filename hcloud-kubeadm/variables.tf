@@ -45,7 +45,7 @@ variable "server_upload_dir" {
 }
 
 variable "install_packages" {
-  type        = list
+  type        = list(string)
   description = "Additional deb packages to install during instance bootstrap."
   default = [
     "fio",
@@ -63,7 +63,7 @@ variable "mayastor_replicas" {
   default     = -1
   description = "How many replicas should mayastor default storageclass use? Leave default to use mayastor_replicas == number of cluster nodes. For mayastor_replicas > number of cluster nodes mayastor **will not start**."
   validation {
-    condition     = (var.mayastor_replicas == -1) || (var.mayastor_replicas >= 1)
+    condition     = var.mayastor_replicas == -1 || var.mayastor_replicas >= 1
     error_message = "The mayastor_replicas must be greater or equal to 1."
   }
 }

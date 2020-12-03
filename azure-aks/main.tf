@@ -1,9 +1,3 @@
-
-provider "azurerm" {
-  version = ">= 2.2"
-  features {}
-}
-
 resource "azurerm_resource_group" "mayastor" {
   name     = "mayastor-aks"
   location = var.location

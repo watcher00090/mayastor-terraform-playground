@@ -14,6 +14,7 @@ printf "Do you want to destroy whole infrastructure? [y/N]: "
 read -r REPLY
 
 if [ "$REPLY" = "Y" ] || [ "$REPLY" = "y" ]; then
+	printf "\n*** You can (probably) safely ignore errors like: Error: Invalid target address\n\n"
 	(
 		cd "$(dirname "$0")/.."
 		terraform state rm 'module.mayastor[0]' || true

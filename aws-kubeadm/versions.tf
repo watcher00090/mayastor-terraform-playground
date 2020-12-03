@@ -1,32 +1,31 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
+      version = "~> 3.15.0"
     }
     kubernetes = {
-      source = "hashicorp/kubernetes"
+      source  = "hashicorp/kubernetes"
+      version = "~> 1.13.3"
     }
     null = {
-      source = "hashicorp/null"
+      source  = "hashicorp/null"
+      version = "~> 3.0.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0.0"
     }
   }
-  required_version = ">= 0.13"
+  required_version = ">= 0.14"
 }
 
 provider "aws" {
-  region  = var.region
-  version = "~> 3.15.0"
+  region = var.region
 }
 
-provider "kubernetes" {
-  config_path = module.cluster.kubeconfig
-  version     = "~> 1.13.3"
-}
+provider "kubernetes" {}
 
-provider "null" {
-  version = "~> 3.0.0"
-}
+provider "null" {}
 
-provider "random" {
-  version = "~> 3.0.0"
-}
+provider "random" {}
