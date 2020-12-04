@@ -99,3 +99,9 @@ variable "mayastor_replicas" {
     error_message = "The mayastor_replicas must be greater or equal to 1."
   }
 }
+
+variable "aws_instance_root_size_gb" {
+  type        = number
+  default     = 8
+  description = "Root block device size for AWS instances in GiB. Clean install (currently) uses a little over 4. Not recommended to use less than default."
+}

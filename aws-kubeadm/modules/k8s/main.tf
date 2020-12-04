@@ -140,6 +140,9 @@ resource "aws_instance" "master" {
     aws_security_group.ingress_k8s.id,
     aws_security_group.ingress_ssh.id
   ]
+  root_block_device {
+    volume_size = var.aws_instance_root_size_gb
+  }
   tags        = merge(local.tags, { "terraform-kubeadm:node" = "master", "Name" = "${var.cluster_name}-master" })
   volume_tags = merge(local.tags, { "terraform-kubeadm:node" = "master", "Name" = "${var.cluster_name}-master" })
   user_data = <<-EOF
@@ -189,6 +192,9 @@ resource "aws_instance" "workers" {
   subnet_id                   = aws_subnet.main.id
   associate_public_ip_address = true
   key_name                    = aws_key_pair.main.key_name
+  root_block_device {
+    volume_size = var.aws_instance_root_size_gb
+  }
   vpc_security_group_ids = [
     aws_security_group.egress.id,
     aws_security_group.ingress_internal.id,

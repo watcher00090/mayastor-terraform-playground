@@ -111,3 +111,5 @@ variable "install_packages" {
     "tcpdump",
   ]
 }
+
+variable "aws_instance_root_size_gb" {}

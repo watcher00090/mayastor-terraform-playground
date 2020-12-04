@@ -4,10 +4,11 @@ module "k8s" {
   cluster_name = var.cluster_name
   num_workers  = var.num_workers
 
-  aws_region         = var.aws_region
-  docker_version     = var.docker_version
-  flannel_version    = var.flannel_version
-  kubernetes_version = var.kubernetes_version
+  aws_instance_root_size_gb = var.aws_instance_root_size_gb
+  aws_region                = var.aws_region
+  docker_version            = var.docker_version
+  flannel_version           = var.flannel_version
+  kubernetes_version        = var.kubernetes_version
 
   ssh_public_keys = var.ssh_public_keys
 
