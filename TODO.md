@@ -1,3 +1,10 @@
+# Environments
+
+[ ] aws eks
+[ ] azure eks
+[ ] azure kubeadm
+[ ] bare-metal kubeadm
+
 # CI
 
 [x] terraform fmt, validate
@@ -10,10 +17,11 @@ See also `hcloud-kubeadm/TODO.md` and TODO section of `aws-kubeadm/README.md`.
 
 # mayastor
 
-- install mayastor client for people to play with
+[x] install mayastor client for people to play with: see bin/mayastor-client
 
 # terraform
 
+- make sure downloaded kubernetes configs are not world readable
 - split pure cluster install, mayastor dependencies install (nvme-tcp, hugepages, volumes for mayastor,...?) and mayastor install itsef
     - make installation of modules configurable via variables
 - add installation of test pod for people to immediately play with

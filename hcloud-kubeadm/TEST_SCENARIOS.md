@@ -2,6 +2,7 @@
 
 - no variables defined but `hcloud_token` and `hcloud_csi_token`
 - deploy of `develop` mayastor: value of `mayastor_use_develop_images` set to `true`
+- `terraform destroy` - as devs tend to use `bin/destroy-quick`
 
 # Scripts
 

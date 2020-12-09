@@ -6,7 +6,10 @@
 # might stop working at any moment. If you need this, please create an issue
 
 # NOTE: this is run *inside* the cluster with all consequences (e.g. for
-# networking)
+# networking - you need to choose the right IP - e.g. in AWS use private ip)
+
+# NOTE2: first run might take a bit as kubernetes need to pull the image first,
+# subsequent runs are much faster
 
 . "$(dirname "$0")"/export-kubeconfig.sh
 
