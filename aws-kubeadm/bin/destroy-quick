@@ -21,6 +21,7 @@ if [ "$REPLY" = "Y" ] || [ "$REPLY" = "y" ]; then
 		terraform state rm 'module.mayastor-dependencies[0]' || true
 		terraform state rm module.k8s.null_resource.flannel || true
 		terraform state rm module.k8s.null_resource.metrics_server || true
+		terraform state rm module.mayastor-dependencies.null_resource.docker_daemon_config_workers || true
 		terraform destroy -auto-approve
 	)
 else

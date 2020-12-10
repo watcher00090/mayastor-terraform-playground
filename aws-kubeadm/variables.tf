@@ -105,3 +105,9 @@ variable "aws_instance_root_size_gb" {
   default     = 8
   description = "Root block device size for AWS instances in GiB. Clean install (currently) uses a little over 4. Not recommended to use less than default."
 }
+
+variable "docker_insecure_registry" {
+  type        = string
+  description = "Set trusted docker registry on worker nodes (handy for private registry)"
+  default     = ""
+}
