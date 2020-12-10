@@ -32,7 +32,7 @@ resource "null_resource" "docker_daemon_config_workers" {
   triggers = {
     docker_config = <<-EOF
     {
-      "insecure-registries" : ${ var.docker_insecure_registry != "" ? jsonencode([var.docker_insecure_registry]) : "[]" }
+      "insecure-registries" : ${var.docker_insecure_registry != "" ? jsonencode([var.docker_insecure_registry]) : "[]"}
     }
     EOF
     workers       = jsonencode(var.workers)
