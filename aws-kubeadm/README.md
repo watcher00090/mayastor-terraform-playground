@@ -58,6 +58,7 @@ You can also run `./bin/destroy-quick` which is faster due to skipping destroyin
 * Install metrics server (see `hcloud-kubeadm/modules/k8s/install-metrics-server.tf`)
 * When developing terraform and master/node creation fails due to `user_data` script failure subsequent `terraform apply` runs will not fix it as instances are "done" and only `wait_for_bootstrap_to_finish` resource is recreated. One has to manually destroy `aws_instance` resources to fix.
 * Remove sleep 10 in mayastor deployment and instead wait for readiness of `msn` and `msp` resources.
+* Do not allocate secondary EBS device for instances that have another storage (e.g. i3.xlarge).
 
 # Acknowledgements
 

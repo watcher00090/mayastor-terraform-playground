@@ -32,16 +32,15 @@ variable "allowed_k8s_cidr_blocks" {
   default     = ["0.0.0.0/0"]
 }
 
-variable "master_instance_type" {
+variable "aws_instance_type_master" {
   type        = string
   description = "EC2 instance type for the master node (must have at least 2 CPUs)."
   default     = "t3.medium"
 }
 
-variable "worker_instance_type" {
+variable "aws_instance_type_worker" {
   type        = string
   description = "EC2 instance type for the worker nodes."
-  default     = "t3.xlarge"
 }
 
 variable "num_workers" {
@@ -113,3 +112,14 @@ variable "install_packages" {
 }
 
 variable "aws_instance_root_size_gb" {}
+
+# NOTE: instance must have >2 CPUs to support mayastor deployment
+variable "aws_worker_instances" {
+  type        = map(string)
+  description = "Map of <instance type>:<disk to use for mayastor pool>. Used to get disk depending on var.aws_worker_instance_type"
+  default = {
+    "t3.xlarge" : "/dev/nvme1n1",
+    "i3.xlarge" : "/dev/nvme0n1",
+  }
+}
+

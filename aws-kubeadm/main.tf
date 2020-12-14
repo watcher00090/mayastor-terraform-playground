@@ -6,6 +6,7 @@ module "k8s" {
 
   aws_instance_root_size_gb = var.aws_instance_root_size_gb
   aws_region                = var.aws_region
+  aws_instance_type_worker  = var.aws_instance_type_worker
   docker_version            = var.docker_version
   flannel_version           = var.flannel_version
   kubernetes_version        = var.kubernetes_version
@@ -34,7 +35,7 @@ module "mayastor" {
   count                       = var.deploy_mayastor ? 1 : 0
   depends_on                  = [module.mayastor-dependencies, module.k8s]
   k8s_master_ip               = module.k8s.cluster_nodes[0].public_ip
-  mayastor_disk               = "/dev/nvme1n1"
+  mayastor_disk               = module.k8s.mayastor_disk
   mayastor_replicas           = var.mayastor_replicas
   mayastor_use_develop_images = var.mayastor_use_develop_images
   node_names                  = [for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) : worker.name]

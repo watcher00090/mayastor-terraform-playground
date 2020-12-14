@@ -19,3 +19,8 @@ output "vpc_id" {
   value       = aws_security_group.egress.vpc_id
   description = "ID of the VPC in which the cluster has been created."
 }
+
+output "mayastor_disk" {
+  value = lookup(var.aws_worker_instances, var.aws_instance_type_worker)
+}
+

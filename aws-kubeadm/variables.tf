@@ -106,6 +106,17 @@ variable "aws_instance_root_size_gb" {
   description = "Root block device size for AWS instances in GiB. Clean install (currently) uses a little over 4. Not recommended to use less than default."
 }
 
+# TODO: avoid repeating instances here and in modules/k8s/variables.tf
+variable "aws_instance_type_worker" {
+  type        = string
+  description = "EC2 instance type to use for kubernetes nodes. Not all types are supported. See modules/k8s/variables.tf - variable aws_worker_instances on how to add support for more."
+  default     = "t3.xlarge"
+  validation {
+    condition     = contains(["t3.xlarge", "i3.xlarge"], var.aws_instance_type_worker)
+    error_message = "Unsupported instance type. To add support check aws_worker_instances variable in modules/k8s/variables.tf."
+  }
+}
+
 variable "docker_insecure_registry" {
   type        = string
   description = "Set trusted docker registry on worker nodes (handy for private registry)"

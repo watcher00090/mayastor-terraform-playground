@@ -131,7 +131,7 @@ resource "aws_key_pair" "main" {
 
 resource "aws_instance" "master" {
   ami           = data.aws_ami.ubuntu.image_id
-  instance_type = var.master_instance_type
+  instance_type = var.aws_instance_type_master
   subnet_id     = aws_subnet.main.id
   key_name      = aws_key_pair.main.key_name
   vpc_security_group_ids = [
@@ -188,7 +188,7 @@ resource "aws_instance" "master" {
 resource "aws_instance" "workers" {
   count                       = var.num_workers
   ami                         = data.aws_ami.ubuntu.image_id
-  instance_type               = var.worker_instance_type
+  instance_type               = var.aws_instance_type_worker
   subnet_id                   = aws_subnet.main.id
   associate_public_ip_address = true
   key_name                    = aws_key_pair.main.key_name
