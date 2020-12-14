@@ -87,6 +87,11 @@ variable "kubernetes_version" {
   description = "Kubernetes version to install."
 }
 
+variable "metrics_server_version" {
+  type        = string
+  description = "Metrics server version to install."
+}
+
 variable "ebs_volume_size" {
   type        = number
   description = "Additional EBS volume size to attach to EC2 instance on workers in gigabytes."
@@ -121,5 +126,10 @@ variable "aws_worker_instances" {
     "t3.xlarge" : "/dev/nvme1n1",
     "i3.xlarge" : "/dev/nvme0n1",
   }
+}
+
+variable "server_upload_dir" {
+  type        = string
+  description = "Terraform provisioner remote-exec sometimes need to put files to a remote machine. It's uploaded into server_upload_dir."
 }
 

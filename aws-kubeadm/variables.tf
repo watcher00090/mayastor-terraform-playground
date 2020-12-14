@@ -58,6 +58,12 @@ variable "kubernetes_version" {
   default     = "1.19.4"
 }
 
+variable "metrics_server_version" {
+  type        = string
+  description = "Metrics server version to install."
+  default     = "0.4.1"
+}
+
 variable "deploy_mayastor" {
   type        = bool
   description = "Deploy mayastor dependencies (nvme-tcp kernel module, set up hugepages) and mayastor itself. Set to false to skip."
@@ -122,3 +128,10 @@ variable "docker_insecure_registry" {
   description = "Set trusted docker registry on worker nodes (handy for private registry)"
   default     = ""
 }
+
+variable "server_upload_dir" {
+  type        = string
+  description = "Terraform provisioner remote-exec sometimes need to put files to a remote machine. It's uploaded into server_upload_dir."
+  default     = "/root/tf-upload"
+}
+

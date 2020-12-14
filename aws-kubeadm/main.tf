@@ -5,11 +5,13 @@ module "k8s" {
   num_workers  = var.num_workers
 
   aws_instance_root_size_gb = var.aws_instance_root_size_gb
-  aws_region                = var.aws_region
   aws_instance_type_worker  = var.aws_instance_type_worker
+  aws_region                = var.aws_region
   docker_version            = var.docker_version
   flannel_version           = var.flannel_version
   kubernetes_version        = var.kubernetes_version
+  metrics_server_version    = var.metrics_server_version
+  server_upload_dir         = var.server_upload_dir
 
   ssh_public_keys = var.ssh_public_keys
 
@@ -39,6 +41,6 @@ module "mayastor" {
   mayastor_replicas           = var.mayastor_replicas
   mayastor_use_develop_images = var.mayastor_use_develop_images
   node_names                  = [for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) : worker.name]
-  server_upload_dir           = "/root/tf-upload"
+  server_upload_dir           = var.server_upload_dir
   source                      = "./modules/mayastor"
 }
