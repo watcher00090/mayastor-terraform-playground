@@ -31,14 +31,14 @@ module "mayastor-dependencies" {
   depends_on = [module.k8s]
 }
 
-module "mayastor" {
-  count                       = var.deploy_mayastor ? 1 : 0
-  depends_on                  = [module.mayastor-dependencies, module.k8s]
-  k8s_master_ip               = module.k8s.cluster_nodes[0].public_ip
-  mayastor_disk               = module.k8s.mayastor_disk
-  mayastor_replicas           = var.mayastor_replicas
-  mayastor_use_develop_images = var.mayastor_use_develop_images
-  node_names                  = [for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) : worker.name]
-  server_upload_dir           = "/root/tf-upload"
-  source                      = "./modules/mayastor"
-}
+// module "mayastor" {
+//  count                       = var.deploy_mayastor ? 1 : 0
+//  depends_on                  = [module.mayastor-dependencies, module.k8s]
+//  k8s_master_ip               = module.k8s.cluster_nodes[0].public_ip
+//  mayastor_disk               = module.k8s.mayastor_disk
+//  mayastor_replicas           = var.mayastor_replicas
+//  mayastor_use_develop_images = var.mayastor_use_develop_images
+//  node_names                  = [for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) : worker.name]
+//  server_upload_dir           = "/root/tf-upload"
+//  source                      = "./modules/mayastor"
+//}

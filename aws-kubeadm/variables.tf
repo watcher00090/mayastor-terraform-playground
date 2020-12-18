@@ -1,19 +1,19 @@
 variable "aws_region" {
   type        = string
   description = "AWS region in which to create the cluster."
-  default     = "eu-central-1"
+  default     = "us-east-1"
 }
 
 variable "availability_zone" {
   type        = string
   description = "AWS availability zone where EBS data volumes will be created."
-  default     = "eu-central-1a"
+  default     = "us-east-1a"
 }
 
 variable "num_workers" {
   type        = number
   description = "Number of worker nodes in k8s cluster"
-  default     = 2
+  default     = 3
 }
 
 // default = {
@@ -31,7 +31,7 @@ variable "ssh_public_keys" {
 variable "cluster_name" {
   type        = string
   description = "Name of the cluster. Used as a part of AWS names and tags of various cluster components."
-  default     = "mayastor-tf-playground"
+  default     = "ajesh-18-dec"
 }
 
 variable "tags" {
@@ -58,11 +58,11 @@ variable "kubernetes_version" {
   default     = "1.19.4"
 }
 
-variable "deploy_mayastor" {
-  type        = bool
-  description = "Deploy mayastor dependencies (nvme-tcp kernel module, set up hugepages) and mayastor itself. Set to false to skip."
-  default     = true
-}
+// variable "deploy_mayastor" {
+//  type        = bool
+//  description = "Deploy mayastor dependencies (nvme-tcp kernel module, set up hugepages) and mayastor itself. Set to false to skip."
+//  default     = false
+//}
 
 variable "ebs_volume_size" {
   type        = number
@@ -110,7 +110,7 @@ variable "aws_instance_root_size_gb" {
 variable "aws_instance_type_worker" {
   type        = string
   description = "EC2 instance type to use for kubernetes nodes. Not all types are supported. See modules/k8s/variables.tf - variable aws_worker_instances on how to add support for more."
-  default     = "t3.xlarge"
+  default     = "i3.xlarge"
   validation {
     condition     = contains(["t3.xlarge", "i3.xlarge"], var.aws_instance_type_worker)
     error_message = "Unsupported instance type. To add support check aws_worker_instances variable in modules/k8s/variables.tf."

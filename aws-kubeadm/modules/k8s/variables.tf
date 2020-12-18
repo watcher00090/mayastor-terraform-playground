@@ -35,7 +35,7 @@ variable "allowed_k8s_cidr_blocks" {
 variable "aws_instance_type_master" {
   type        = string
   description = "EC2 instance type for the master node (must have at least 2 CPUs)."
-  default     = "t3.medium"
+  default     = "t3.large"
 }
 
 variable "aws_instance_type_worker" {
