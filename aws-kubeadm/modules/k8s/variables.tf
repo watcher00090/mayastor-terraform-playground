@@ -90,7 +90,6 @@ variable "kubernetes_version" {
 variable "ebs_volume_size" {
   type        = number
   description = "Additional EBS volume size to attach to EC2 instance on workers in gigabytes."
-  default     = 5
 }
 
 variable "mayastor_use_develop_images" {
