@@ -57,6 +57,12 @@ variable "install_packages" {
   ]
 }
 
+variable "deploy_mayastor" {
+  type        = bool
+  description = "Deploy mayastor itself. Set to false to skip."
+  default     = true
+}
+
 # Note: cannot use null as a default as validation doesn't like it
 variable "mayastor_replicas" {
   type        = number
@@ -66,4 +72,10 @@ variable "mayastor_replicas" {
     condition     = var.mayastor_replicas == -1 || var.mayastor_replicas >= 1
     error_message = "The mayastor_replicas must be greater or equal to 1."
   }
+}
+
+variable "docker_insecure_registry" {
+  type        = string
+  description = "Set trusted docker registry on worker nodes (handy for private registry)"
+  default     = ""
 }

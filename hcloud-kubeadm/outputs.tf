@@ -3,7 +3,7 @@ output "master_ip" {
 }
 
 output "node_ips" {
-  value = module.k8s.node_ips
+  value = [for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) : worker.public_ip]
 }
 
 output "k8s_admin_conf" {

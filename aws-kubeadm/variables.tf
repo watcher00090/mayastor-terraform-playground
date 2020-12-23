@@ -60,7 +60,7 @@ variable "kubernetes_version" {
 
 variable "deploy_mayastor" {
   type        = bool
-  description = "Deploy mayastor dependencies (nvme-tcp kernel module, set up hugepages) and mayastor itself. Set to false to skip."
+  description = "Deploy mayastor itself. Set to false to skip."
   default     = true
 }
 

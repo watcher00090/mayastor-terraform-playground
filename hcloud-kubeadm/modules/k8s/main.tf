@@ -91,26 +91,6 @@ resource "hcloud_server" "node" {
     inline = ["mkdir \"${var.server_upload_dir}\""]
   }
 
-  # configure hugepages for mayastor
-  provisioner "file" {
-    content = templatefile("${path.module}/templates/hugepages.sh", {
-      hugepages_2M_amount = var.hugepages_2M_amount,
-    })
-    destination = "${var.server_upload_dir}/hugepages.sh"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "set -xve",
-      "chmod +x \"${var.server_upload_dir}/hugepages.sh\"",
-      "\"${var.server_upload_dir}/hugepages.sh\"",
-    ]
-  }
-  # there's a sleep 2 && reboot run by hugepages.sh - wait a bit to avoid
-  # connecting to a machine going down
-  provisioner "local-exec" {
-    command = "sleep 5"
-  }
-
   provisioner "file" {
     source      = "${path.module}/files/10-kubeadm.conf"
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
