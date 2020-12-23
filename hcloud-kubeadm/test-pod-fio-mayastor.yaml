@@ -23,7 +23,7 @@ spec:
   containers:
     - name: fio
       image: alpine
-      command: ['sh', '-c', 'apk add fio && sleep 100000']
+      command: ['sh', '-c', 'apk add fio tini && exec tini -- sleep 100000']
       volumeMounts:
         - mountPath: "/volume"
           name: ms-volume
