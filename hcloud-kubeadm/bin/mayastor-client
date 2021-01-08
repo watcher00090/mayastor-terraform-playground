@@ -1,15 +1,14 @@
-#! /bin/sh -e
+#! /bin/sh
 
 # SYNOPSIS: mayastor-client [<argument> ...]
 
-# run mayastor-cli that is (probably by omission) included in mayastor-csi this
-# might stop working at any moment. If you need this, please create an issue
+# this is run *inside* the cluster with all consequences (e.g. for networking -
+# you need to choose the right IP - e.g. in AWS use private ip)
 
-# NOTE: this is run *inside* the cluster with all consequences (e.g. for
-# networking - you need to choose the right IP - e.g. in AWS use private ip)
-
-# NOTE2: first run might take a bit as kubernetes need to pull the image first,
+# first run might take a bit as kubernetes need to pull the image first,
 # subsequent runs are much faster
+
+set -e
 
 . "$(dirname "$0")"/export-kubeconfig.sh
 
