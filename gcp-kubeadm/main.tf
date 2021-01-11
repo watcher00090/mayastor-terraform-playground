@@ -8,6 +8,8 @@ module "k8s" {
     hugepages_2M_amount = var.hugepages_2M_amount
 
     gcp_project = var.gcp_project
+
+    ssh_public_key_name_for_instances = var.admin_ssh_keys
 }
 
 /*

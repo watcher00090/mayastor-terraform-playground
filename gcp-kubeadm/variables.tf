@@ -34,10 +34,11 @@ variable "hugepages_2M_amount" {
 }
 
 variable "admin_ssh_keys" {
-  description = "Map of maps for configuring ssh keys. Keys are key names in hcloud values are maps with either key_file which is read or key_data which is used verbatim."
-  default = {
-    "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
-  }
+  description = "Map of maps for configuring ssh keys. Keys are key names in GCP, values are the contents of the ssh public keys."
+  default = "key1"
+  #default = {
+  #  "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
+  #}
 }
 
 variable "mayastor_use_develop_images" {
