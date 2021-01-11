@@ -49,11 +49,14 @@ resource "google_compute_instance" "master"{
 
     connection {
         host = self.network_interface.0.access_config.0.nat_ip
+        type = "ssh"
+        user = "ubuntu-user"
+        private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
     }
 
-    #provisioner "remote-exec" {
-    #  inline = ["echo LOCAL EXEC PROVISIONER OPERATIONAL"]
-    #}
+    provisioner "remote-exec" {
+      inline = ["echo LOCAL EXEC PROVISIONER OPERATIONAL"]
+    }
 
     depends_on = [google_compute_project_metadata.my_ssh_key]
 }
