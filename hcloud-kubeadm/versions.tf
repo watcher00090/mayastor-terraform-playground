@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     hcloud = {
-      source  = "terraform-providers/hcloud"
+      source  = "hetznercloud/hcloud"
       version = "~> 1.23.0"
     }
     kubernetes = {
