@@ -22,11 +22,6 @@ variable "node_count" {
   default     = 2
 }
 
-variable "hugepages_2M_amount" {
-  description = "Amount of 2M hugepages to enable system-wide; mayastor requires at least 512 2M hugepages for itself"
-  default     = 640
-}
-
 variable "admin_ssh_keys" {
   description = "Map of maps for configuring ssh keys. Keys are key names in hcloud values are maps with either key_file which is read or key_data which is used verbatim."
   default = {
