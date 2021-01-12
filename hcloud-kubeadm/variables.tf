@@ -1,11 +1,13 @@
 variable "hcloud_token" {
   type        = string
   description = "HCloud API token. Create a project in https://console.hetzner.cloud - open project -> go to security -> API Tokens and GENERATE API TOKEN. Make sure it is read/write token."
+  sensitive   = true
 }
 
 variable "hcloud_csi_token" {
   type        = string
   description = "HCloud API token. Create a project in https://console.hetzner.cloud - open project -> go to security -> API Tokens and GENERATE API TOKEN. Make sure it is read/write token. Can be the same as hcloud_token."
+  sensitive   = true
 }
 
 variable "hetzner_location" {
