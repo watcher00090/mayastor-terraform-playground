@@ -4,9 +4,10 @@ provider "google" {
     zone = "us-central1-c"
 }
 
+# TODO: Add some docs about why we are using port 6443
 provider "kubernetes" {
     config_path = local.k8s_config
-    host        = "https://${google_compute_instance.master.ipv4_address}"
+    host        = "https://${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:6443"
 }
 
 locals {
@@ -26,6 +27,7 @@ EOF
     project = var.gcp_project
 }
 
+# 'self.network_interface.0.access_config.0.nat_ip' is the ipv4 address of self
 resource "google_compute_instance" "master"{
     name = "master"
     machine_type = "f1-micro"
@@ -50,12 +52,70 @@ resource "google_compute_instance" "master"{
     connection {
         host = self.network_interface.0.access_config.0.nat_ip
         type = "ssh"
-        user = "ubuntu-user"
+        user = "root"
         private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
     }
 
+    # enable root ssh login to instance
+    provisioner "local-exec" {
+        command = "ssh -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@${self.network_interface.0.access_config.0.nat_ip} sudo vi /etc/ssh/sshd_config -c '%s/\\s*PermitRootLogin\\s\\+no/PermitRootLogin yes/gi ^| wq'"
+    }
+
     provisioner "remote-exec" {
-      inline = ["echo LOCAL EXEC PROVISIONER OPERATIONAL"]
+        inline = ["set -xve", "mkdir ${var.server_upload_dir}"]
+    }
+
+    provisioner "file" {
+        source      = "${path.module}/files/10-kubeadm.conf"
+        destination = "${var.server_upload_dir}/10-kubeadm.conf"
+    }
+
+    provisioner "remote-exec" {
+      inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \" set ff=unix | wq\""]
+    }
+
+    provisioner "file" {
+      content = templatefile("${path.module}/templates/bootstrap.sh", {
+        docker_version     = var.docker_version,
+        install_packages   = var.install_packages,
+        kubernetes_version = var.kubernetes_version,
+        server_upload_dir  = var.server_upload_dir,
+      })
+      destination = "${var.server_upload_dir}/bootstrap.sh"
+    }
+
+    provisioner "remote-exec" {
+      inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
+    }
+
+    provisioner "file" {
+      content = templatefile("${path.module}/templates/master.sh", {
+        feature_gates    = var.feature_gates,
+        pod_network_cidr = var.pod_network_cidr,
+      })
+      destination = "${var.server_upload_dir}/master.sh"
+    }
+
+    provisioner "remote-exec" {
+      inline = ["set -xve", "vi ${var.server_upload_dir}/master.sh -c \"set ff=unix | wq\""]
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "set -xve",
+        "chmod +x ${var.server_upload_dir}/bootstrap.sh ${var.server_upload_dir}/master.sh",
+        "${var.server_upload_dir}/bootstrap.sh",
+        "${var.server_upload_dir}/master.sh",
+      ]
+    }
+
+    provisioner "local-exec" {
+      command = "${path.module}/scripts/copy-k8s-secrets.bat"
+      environment = {
+        K8S_CONFIG   = local.k8s_config
+        KUBEADM_JOIN = local.kubeadm_join
+        SSH_HOST     = self.network_interface.0.access_config.0.nat_ip
+      }
     }
 
     depends_on = [google_compute_project_metadata.my_ssh_key]
@@ -84,9 +144,25 @@ resource "google_compute_instance" "node" {
         }
     }
 
-    connection {
-        host = self.ipv4_address
+    #connection {
+    #    host = self.network_interface.0.access_config.0.nat_ip
+    #    type = "ssh"
+    #    user = "ubuntu-user"
+    #    private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
+    #}
+
+    # enable root ssh login to instance
+    provisioner "local-exec" {
+        command = "ssh -t ubuntu-user@${self.network_interface.0.access_config.0.nat_ip} 'sudo vi /etc/ssh/sshd_config -c \"%s/^\\s*PermitRootLogin\\s*=\\s*no/PermitRootLogin=yes/gi\"'"
     }
+
+    connection {
+        host = self.network_interface.0.access_config.0.nat_ip
+        type = "ssh"
+        user = "root"
+        private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
+    }
+
 
     depends_on = [google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
 }
