@@ -23,6 +23,7 @@ resource "google_compute_project_metadata" "my_ssh_key" {
     metadata = {
       ssh-keys = <<EOF
       ubuntu-user:ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAzYjBY10oK9lG4H8+sWMxe5eFXMe/fxNQEbkFiAHzmIo0dE0UAtlMb6W9t68m4CSjQaVyPFeLhA4qZRgyUxPtB3tXhwaRkBqcxrDNmuzPa0rJ11HNCnUPKk3+OwiAT5rF3AxHBW0vdHpeLtw2gJsK6VMA31wP4l7spBCMcmJGUMsdILJwBGh7b9MpZl9IIDpMaDXVcXi4Ho+kl9D/5T9fxE3zHgj0Y6JzgVCN0yH3XHjnfvU3+vHdlQ8Lkg4rY/nh5jkwB5JFVrXkmMr568K1UwbaVcBUf2Wao1EeJzqNvqJQ/y5ec2UKa/D3v52MJ7N2eyLmb3tjSnzFwvCiV/eF5Q== ubuntu-user
+      root:ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAzYjBY10oK9lG4H8+sWMxe5eFXMe/fxNQEbkFiAHzmIo0dE0UAtlMb6W9t68m4CSjQaVyPFeLhA4qZRgyUxPtB3tXhwaRkBqcxrDNmuzPa0rJ11HNCnUPKk3+OwiAT5rF3AxHBW0vdHpeLtw2gJsK6VMA31wP4l7spBCMcmJGUMsdILJwBGh7b9MpZl9IIDpMaDXVcXi4Ho+kl9D/5T9fxE3zHgj0Y6JzgVCN0yH3XHjnfvU3+vHdlQ8Lkg4rY/nh5jkwB5JFVrXkmMr568K1UwbaVcBUf2Wao1EeJzqNvqJQ/y5ec2UKa/D3v52MJ7N2eyLmb3tjSnzFwvCiV/eF5Q== root
 EOF
     }
     project = var.gcp_project
