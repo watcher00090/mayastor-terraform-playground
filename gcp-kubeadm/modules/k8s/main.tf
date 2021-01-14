@@ -11,8 +11,9 @@ provider "kubernetes" {
 }
 
 locals {
-    k8s_config   = "${path.module}/secrets/admin.conf"
+    k8s_config   = "${local.windows_module_path}/secrets/admin.conf"
     kubeadm_join = "${path.module}/secrets/kubeadm_join"
+    windows_module_path = "${replace(path.module, "///", "\\")}"
 }
 
 data "google_client_openid_userinfo" "me" {
@@ -26,6 +27,12 @@ EOF
     }
     project = var.gcp_project
 }
+
+output "windows_module_path" {
+  value = local.windows_module_path
+  description = "windows module path"
+}
+
 
 # 'self.network_interface.0.access_config.0.nat_ip' is the ipv4 address of self
 resource "google_compute_instance" "master"{
@@ -58,7 +65,13 @@ resource "google_compute_instance" "master"{
 
     # enable root ssh login to instance
     provisioner "local-exec" {
-        command = "ssh -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@${self.network_interface.0.access_config.0.nat_ip} sudo vi /etc/ssh/sshd_config -c '%s/\\s*PermitRootLogin\\s\\+no/PermitRootLogin yes/gi ^| wq'"
+      # command = "ssh -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@${self.network_interface.0.access_config.0.nat_ip} sudo vi /etc/ssh/sshd_config -c '%s/\\s*PermitRootLogin\\s\\+no/PermitRootLogin yes/gi ^| wq' ^; ^e^x^i^t ^; ^e^x^i^t ^; ^e^x^i^t"
+      command = "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat"
+      environment = {
+        INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
+        # VIM_COMMAND = "%s/PermitRootLogin\\\\s\\\\+\\\\w\\\\+/PermitRootLogin yes/gi \\| wq"
+        # VIM_COMMAND = "%s/PermitRootLogin no/PermitRootLogin yes/gi \\| wq"
+      }
     }
 
     provisioner "remote-exec" {
