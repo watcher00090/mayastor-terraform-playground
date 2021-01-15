@@ -33,6 +33,17 @@ variable "hugepages_2M_amount" {
   default     = 640
 }
 
+variable "host_type" {
+  type = string
+  description = "The type of host being used locally. Currently accepts only Linux, Windows, and OSX. Case insensitive."
+
+  validation {
+    condition = contains(["WINDOWS", "LINUX", "OSX"], upper(var.host_type))
+    error_message = "Error, invalid host type. Only accepts Windows, Linux, and OSX. Please try again. Case insensitive."
+  }
+
+}
+
 variable "admin_ssh_keys" {
   description = "Map of maps for configuring ssh keys. Keys are key names in GCP, values are the contents of the ssh public keys."
   default = "key1"

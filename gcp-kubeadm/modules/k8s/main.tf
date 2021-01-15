@@ -11,9 +11,10 @@ provider "kubernetes" {
 }
 
 locals {
-    k8s_config   = "${local.windows_module_path}/secrets/admin.conf"
-    kubeadm_join = "${path.module}/secrets/kubeadm_join"
+    k8s_config   = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\admin.conf" : "${path.module}/secrets/admin.conf"
+    kubeadm_join = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\kubeadm_join" : "${path.module}/secrets/kubeadm_join"
     windows_module_path = "${replace(path.module, "///", "\\")}"
+    on_windows_host = upper(var.host_type) == "WINDOWS" ? true : false
 }
 
 data "google_client_openid_userinfo" "me" {
@@ -66,7 +67,7 @@ resource "google_compute_instance" "master"{
 
     # enable root ssh login to instance
     provisioner "local-exec" {
-      command = "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat"
+      command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
       environment = {
         INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
       }
@@ -164,7 +165,7 @@ resource "google_compute_instance" "node" {
 
     # enable root ssh login to instance
     provisioner "local-exec" {
-      command = "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat"
+      command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
       environment = {
         INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
       }

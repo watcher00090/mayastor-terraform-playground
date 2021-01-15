@@ -14,6 +14,8 @@ variable "kubernetes_version" {
     default = "1.19.0"
 }
 
+variable "host_type" {}
+
 variable "feature_gates" {
   description = "Add Feature Gates e.g. 'DynamicKubeletConfig=true'"
   default     = ""
