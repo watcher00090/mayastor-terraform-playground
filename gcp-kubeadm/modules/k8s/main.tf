@@ -66,12 +66,9 @@ resource "google_compute_instance" "master"{
 
     # enable root ssh login to instance
     provisioner "local-exec" {
-      # command = "ssh -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@${self.network_interface.0.access_config.0.nat_ip} sudo vi /etc/ssh/sshd_config -c '%s/\\s*PermitRootLogin\\s\\+no/PermitRootLogin yes/gi ^| wq' ^; ^e^x^i^t ^; ^e^x^i^t ^; ^e^x^i^t"
       command = "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat"
       environment = {
         INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
-        # VIM_COMMAND = "%s/PermitRootLogin\\\\s\\\\+\\\\w\\\\+/PermitRootLogin yes/gi \\| wq"
-        # VIM_COMMAND = "%s/PermitRootLogin no/PermitRootLogin yes/gi \\| wq"
       }
     }
 
@@ -167,7 +164,10 @@ resource "google_compute_instance" "node" {
 
     # enable root ssh login to instance
     provisioner "local-exec" {
-        command = "ssh -t ubuntu-user@${self.network_interface.0.access_config.0.nat_ip} 'sudo vi /etc/ssh/sshd_config -c \"%s/^\\s*PermitRootLogin\\s*=\\s*no/PermitRootLogin=yes/gi\"'"
+      command = "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat"
+      environment = {
+        INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
+      }
     }
 
     connection {
@@ -177,8 +177,40 @@ resource "google_compute_instance" "node" {
         private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
     }
 
+    provisioner "remote-exec" {
+      inline = ["mkdir \"${var.server_upload_dir}\""]
+    }
 
-    depends_on = [google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
+    provisioner "file" {
+      source      = "${path.module}/files/10-kubeadm.conf"
+      destination = "${var.server_upload_dir}/10-kubeadm.conf"
+    }
+
+  provisioner "file" {
+    content = templatefile("${path.module}/templates/bootstrap.sh", {
+      docker_version     = var.docker_version,
+      install_packages   = var.install_packages,
+      kubernetes_version = var.kubernetes_version,
+      server_upload_dir  = var.server_upload_dir,
+    })
+    destination = "${var.server_upload_dir}/bootstrap.sh"
+  }
+
+  provisioner "file" {
+    source      = local.kubeadm_join
+    destination = "${var.server_upload_dir}/kubeadm_join"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "set -xve",
+      "chmod +x \"${var.server_upload_dir}/bootstrap.sh\"",
+      "\"${var.server_upload_dir}/bootstrap.sh\"",
+      "eval $(cat ${var.server_upload_dir}/kubeadm_join) && systemctl enable docker kubelet",
+    ]
+  }
+
+  depends_on = [google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
 }
 
 #resource "google_ssh_key" "admin_ssh_keys" {
