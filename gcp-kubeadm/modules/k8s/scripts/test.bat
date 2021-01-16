@@ -1,0 +1,1 @@
+ssh -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% sudo vim /etc/ssh/sshd_config -c \^"%s/PermitRootLogin\s\+\w\+/PermitRootLogin yes/gi ^| wq\^"

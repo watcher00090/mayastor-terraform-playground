@@ -17,6 +17,17 @@ locals {
     on_windows_host = upper(var.host_type) == "WINDOWS" ? true : false
 }
 
+# Ubuntu 20 LTS
+data "google_compute_image" "my_ubuntu_image" {
+   # name = "ubuntu-minimal-2004-focal-v20210113"
+   # project = "ubuntu-os-cloud"
+   name = "debian-9-stretch-v20201216"
+   project = "debian-cloud"
+
+   #name = "ubuntu-2004-focal-v20210112"
+   #project = "ubuntu-os-cloud"
+}
+
 data "google_client_openid_userinfo" "me" {
 }
 
@@ -39,14 +50,14 @@ output "windows_module_path" {
 # 'self.network_interface.0.access_config.0.nat_ip' is the ipv4 address of self
 resource "google_compute_instance" "master"{
     name = "master"
-    machine_type = "f1-micro"
+    machine_type = "e2-standard-2"
     metadata = {
         block-project-ssh-keys = false
     }
 
     boot_disk {
         initialize_params {
-            image = "debian-cloud/debian-9"
+           image = data.google_compute_image.my_ubuntu_image.self_link
         }
     }
 
@@ -62,7 +73,7 @@ resource "google_compute_instance" "master"{
         host = self.network_interface.0.access_config.0.nat_ip
         type = "ssh"
         user = "root"
-        private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
+        private_key = file(var.private_key_absolute_path)
     }
 
     # enable root ssh login to instance
@@ -70,6 +81,7 @@ resource "google_compute_instance" "master"{
       command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
       environment = {
         INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
+        PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
       }
     }
 
@@ -122,11 +134,12 @@ resource "google_compute_instance" "master"{
     }
 
     provisioner "local-exec" {
-      command = "${path.module}/scripts/copy-k8s-secrets.bat"
+      command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\copy-k8s-secrets.bat" : "${path.module}/scripts/copy-k8s-secrets.sh"
       environment = {
         K8S_CONFIG   = local.k8s_config
         KUBEADM_JOIN = local.kubeadm_join
         SSH_HOST     = self.network_interface.0.access_config.0.nat_ip
+        PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
       }
     }
 
@@ -136,7 +149,7 @@ resource "google_compute_instance" "master"{
 resource "google_compute_instance" "node" {
     count = var.node_count
     name = "worker-${count.index + 1}"
-    machine_type = "f1-micro"
+    machine_type = "e2-standard-2"
 
     metadata = {
         block-project-ssh-keys = false
@@ -144,7 +157,7 @@ resource "google_compute_instance" "node" {
 
     boot_disk {
         initialize_params {
-            image = "debian-cloud/debian-9"
+           image = data.google_compute_image.my_ubuntu_image.self_link
         }
     }
 
@@ -163,11 +176,17 @@ resource "google_compute_instance" "node" {
     #    private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
     #}
 
+    # Disable Google's OS-login so that ssh can complete
+    # provisioner "local-exec" {
+    #  command = "gcloud compute instances add-metadata master --metadata enable-oslogin=FALSE"
+    # }
+
     # enable root ssh login to instance
     provisioner "local-exec" {
       command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
       environment = {
         INSTANCE_IPV4_ADDRESS = self.network_interface.0.access_config.0.nat_ip
+        PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
       }
     }
 
@@ -175,11 +194,11 @@ resource "google_compute_instance" "node" {
         host = self.network_interface.0.access_config.0.nat_ip
         type = "ssh"
         user = "root"
-        private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
+        private_key = file(var.private_key_absolute_path)
     }
 
     provisioner "remote-exec" {
-      inline = ["mkdir \"${var.server_upload_dir}\""]
+      inline = ["mkdir ${var.server_upload_dir}"]
     }
 
     provisioner "file" {
@@ -187,29 +206,41 @@ resource "google_compute_instance" "node" {
       destination = "${var.server_upload_dir}/10-kubeadm.conf"
     }
 
-  provisioner "file" {
-    content = templatefile("${path.module}/templates/bootstrap.sh", {
-      docker_version     = var.docker_version,
-      install_packages   = var.install_packages,
-      kubernetes_version = var.kubernetes_version,
-      server_upload_dir  = var.server_upload_dir,
-    })
-    destination = "${var.server_upload_dir}/bootstrap.sh"
-  }
+    provisioner "remote-exec" {
+      inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \"set ff=unix | wq\""]
+    }
 
-  provisioner "file" {
-    source      = local.kubeadm_join
-    destination = "${var.server_upload_dir}/kubeadm_join"
-  }
+    provisioner "file" {
+      content = templatefile("${path.module}/templates/bootstrap.sh", {
+        docker_version     = var.docker_version,
+        install_packages   = var.install_packages,
+        kubernetes_version = var.kubernetes_version,
+        server_upload_dir  = var.server_upload_dir,
+      })
+      destination = "${var.server_upload_dir}/bootstrap.sh"
+    }
 
-  provisioner "remote-exec" {
-    inline = [
-      "set -xve",
-      "chmod +x \"${var.server_upload_dir}/bootstrap.sh\"",
-      "\"${var.server_upload_dir}/bootstrap.sh\"",
-      "eval $(cat ${var.server_upload_dir}/kubeadm_join) && systemctl enable docker kubelet",
-    ]
-  }
+    provisioner "remote-exec" {
+      inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
+    }
+
+    provisioner "file" {
+      source      = local.kubeadm_join
+      destination = "${var.server_upload_dir}/kubeadm_join"
+    }
+
+    provisioner "remote-exec" {
+      inline = ["set -xve", "vi ${var.server_upload_dir}/kubeadm_join -c \"set ff=unix | wq\""]
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "set -xve",
+        "chmod +x ${var.server_upload_dir}/bootstrap.sh",
+        "${var.server_upload_dir}/bootstrap.sh",
+        "eval $(cat ${var.server_upload_dir}/kubeadm_join) && systemctl enable docker kubelet",
+      ]
+    }
 
   depends_on = [google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
 }

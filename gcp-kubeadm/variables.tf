@@ -44,6 +44,12 @@ variable "host_type" {
 
 }
 
+variable "private_key_absolute_path" {
+  type = string
+  description = "Absolute path to the private key"
+  # default = "C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem"
+}
+
 variable "admin_ssh_keys" {
   description = "Map of maps for configuring ssh keys. Keys are key names in GCP, values are the contents of the ssh public keys."
   default = "key1"

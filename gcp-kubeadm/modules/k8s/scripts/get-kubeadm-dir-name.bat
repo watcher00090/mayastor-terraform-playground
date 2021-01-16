@@ -1,0 +1,1 @@
+echo %~dp1 > bash-dump.txt

@@ -12,6 +12,7 @@ module "k8s" {
     ssh_public_key_name_for_instances = var.admin_ssh_keys
 
     host_type = var.host_type
+    private_key_absolute_path = var.private_key_absolute_path
 }
 
 /*

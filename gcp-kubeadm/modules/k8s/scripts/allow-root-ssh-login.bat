@@ -1,2 +1,2 @@
-ssh -n -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% "sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config"
-ssh -n -i C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% "sudo systemctl restart ssh"
+ssh -n -i %PRIVATE_KEY_ABSOLUTE_PATH% -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% "sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config"
+ssh -n -i %PRIVATE_KEY_ABSOLUTE_PATH% -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% "sudo systemctl restart ssh"
