@@ -1,11 +1,13 @@
 variable "hcloud_token" {
   type        = string
   description = "HCloud API token. Create a project in https://console.hetzner.cloud - open project -> go to security -> API Tokens and GENERATE API TOKEN. Make sure it is read/write token."
+  sensitive   = true
 }
 
 variable "hcloud_csi_token" {
   type        = string
   description = "HCloud API token. Create a project in https://console.hetzner.cloud - open project -> go to security -> API Tokens and GENERATE API TOKEN. Make sure it is read/write token. Can be the same as hcloud_token."
+  sensitive   = true
 }
 
 variable "hetzner_location" {
@@ -18,11 +20,6 @@ variable "node_count" {
   type        = number
   description = "Number of kubernetes worker nodes. Mayastor is deployed in a way that it creates replica on each node."
   default     = 2
-}
-
-variable "hugepages_2M_amount" {
-  description = "Amount of 2M hugepages to enable system-wide; mayastor requires at least 512 2M hugepages for itself"
-  default     = 640
 }
 
 variable "admin_ssh_keys" {
