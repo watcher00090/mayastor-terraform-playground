@@ -1,9 +1,9 @@
-rem ! /bin/bash
 
-rem set -eu
-
-.\get-kubeadm-dir-name.bat %KUBEADM_JOIN%
+call %WINDOWS_MODULE_PATH%\scripts\copy-k8s-secrets-helper.bat %KUBEADM_JOIN%
 set /p KUBEADM_DIR_NAME=<bash-dump.txt
+
+rem .\get-kubeadm-dir-name.bat %KUBEADM_JOIN%
+rem set /p KUBEADM_DIR_NAME=<bash-dump.txt
 
 echo "Creating a directory called %KUBEADM_DIR_NAME% to store joining and configuration info of the cluster...."
 mkdir %KUBEADM_DIR_NAME%

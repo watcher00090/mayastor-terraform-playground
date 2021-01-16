@@ -140,6 +140,7 @@ resource "google_compute_instance" "master"{
         KUBEADM_JOIN = local.kubeadm_join
         SSH_HOST     = self.network_interface.0.access_config.0.nat_ip
         PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
+        WINDOWS_MODULE_PATH = local.windows_module_path
       }
     }
 
