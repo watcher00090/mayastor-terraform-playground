@@ -252,70 +252,23 @@ resource "google_compute_instance" "node" {
 #  public_key = lookup(each.value, "key_file", "__missing__") == "__missing__" ? lookup(each.value, "key_data") : file(lookup(each.value, "key_file"))
 #}
 
-/*
-resource "hcloud_server" "node" {
-  count       = var.node_count
-  name        = "node-${count.index + 1}"
-  server_type = var.node_type
-  image       = var.node_image
-  depends_on  = [hcloud_server.master]
-  ssh_keys    = [for key in hcloud_ssh_key.admin_ssh_keys : key.id]
-  location    = var.hetzner_location
-
-  // FIXME: re-create node on change in the scripts content; triggers do not work here
-
-  connection {
-    host = self.ipv4_address
-  }
-
-  provisioner "remote-exec" {
-    inline = ["mkdir \"${var.server_upload_dir}\""]
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/files/10-kubeadm.conf"
-    destination = "${var.server_upload_dir}/10-kubeadm.conf"
-  }
-
-  provisioner "file" {
-    content = templatefile("${path.module}/templates/bootstrap.sh", {
-      docker_version     = var.docker_version,
-      install_packages   = var.install_packages,
-      kubernetes_version = var.kubernetes_version,
-      server_upload_dir  = var.server_upload_dir,
-    })
-    destination = "${var.server_upload_dir}/bootstrap.sh"
-  }
-
-  provisioner "file" {
-    source      = local.kubeadm_join
-    destination = "${var.server_upload_dir}/kubeadm_join"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "set -xve",
-      "chmod +x \"${var.server_upload_dir}/bootstrap.sh\"",
-      "\"${var.server_upload_dir}/bootstrap.sh\"",
-      "eval $(cat ${var.server_upload_dir}/kubeadm_join) && systemctl enable docker kubelet",
-    ]
-  }
-
-}
 
 resource "null_resource" "cluster_firewall_master" {
   triggers = {
     deploy_script = templatefile("${path.module}/templates/generate-firewall.sh", {
-      k8s_master_ipv4 = hcloud_server.master.ipv4_address,
-      k8s_nodes_ipv4  = join(" ", [for node in hcloud_server.node : node.ipv4_address]),
+      k8s_master_ipv4 = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
+      k8s_nodes_ipv4  = join(" ", [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip]),
       master          = "true",
     }),
-    k8s_master_ipv4   = hcloud_server.master.ipv4_address,
+    k8s_master_ipv4   = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
     server_upload_dir = var.server_upload_dir
   }
 
   connection {
     host = self.triggers.k8s_master_ipv4
+    type = "ssh"
+    user = "root"
+    private_key = file(var.private_key_absolute_path)
   }
 
   provisioner "file" {
@@ -324,10 +277,14 @@ resource "null_resource" "cluster_firewall_master" {
   }
 
   provisioner "remote-exec" {
+    inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
+  }
+
+  provisioner "remote-exec" {
     inline = [
       "set -xve",
-      "chmod +x \"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
-      "\"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
+      "chmod +x ${self.triggers.server_upload_dir}/generate-firewall.sh",
+      "${self.triggers.server_upload_dir}/generate-firewall.sh",
     ]
   }
 
@@ -339,16 +296,19 @@ resource "null_resource" "cluster_firewall_node" {
   count = var.node_count
   triggers = {
     deploy_script = templatefile("${path.module}/templates/generate-firewall.sh", {
-      k8s_master_ipv4 = hcloud_server.master.ipv4_address,
-      k8s_nodes_ipv4  = join(" ", [for node in hcloud_server.node : node.ipv4_address]),
+      k8s_master_ipv4 = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
+      k8s_nodes_ipv4  = join(" ", [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip]),
       master          = "false",
     }),
-    k8s_node_ipv4     = hcloud_server.node[count.index].ipv4_address
+    k8s_node_ipv4     = google_compute_instance.node[count.index].network_interface.0.access_config.0.nat_ip
     server_upload_dir = var.server_upload_dir
   }
 
   connection {
     host = self.triggers.k8s_node_ipv4
+    type = "ssh"
+    user = "root"
+    private_key = file(var.private_key_absolute_path)
   }
 
   provisioner "file" {
@@ -357,13 +317,15 @@ resource "null_resource" "cluster_firewall_node" {
   }
 
   provisioner "remote-exec" {
+    inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
+  }
+
+  provisioner "remote-exec" {
     inline = [
       "set -xve",
-      "chmod +x \"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
-      "\"${self.triggers.server_upload_dir}/generate-firewall.sh\"",
+      "chmod +x ${self.triggers.server_upload_dir}/generate-firewall.sh",
+      "${self.triggers.server_upload_dir}/generate-firewall.sh",
     ]
   }
 
 }
-
-*/
