@@ -1,5 +1,5 @@
 variable "gcp_project" {
-  type = string
+  type        = string
   description = "The GCP project that all of your resources will be created in."
   # default = "default"
 }
@@ -34,25 +34,25 @@ variable "hugepages_2M_amount" {
 }
 
 variable "host_type" {
-  type = string
+  type        = string
   description = "The type of host being used locally. Currently accepts only Linux, Windows, and OSX. Case insensitive."
 
   validation {
-    condition = contains(["WINDOWS", "LINUX", "OSX"], upper(var.host_type))
+    condition     = contains(["WINDOWS", "LINUX", "OSX"], upper(var.host_type))
     error_message = "Error, invalid host type. Only accepts Windows, Linux, and OSX. Please try again. Case insensitive."
   }
 
 }
 
 variable "private_key_absolute_path" {
-  type = string
+  type        = string
   description = "Absolute path to the private key"
   # default = "C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem"
 }
 
 variable "admin_ssh_keys" {
   description = "Map of maps for configuring ssh keys. Keys are key names in GCP, values are the contents of the ssh public keys."
-  default = "key1"
+  default     = "key1"
   #default = {
   #  "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
   #}

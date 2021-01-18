@@ -1,21 +1,21 @@
 module "k8s" {
-    source = "./modules/k8s"
+  source = "./modules/k8s"
 
-    node_count = var.node_count
-    server_upload_dir = var.server_upload_dir
-    
-    install_packages = var.install_packages
-    hugepages_2M_amount = var.hugepages_2M_amount
+  node_count        = var.node_count
+  server_upload_dir = var.server_upload_dir
 
-    gcp_project = var.gcp_project
+  install_packages    = var.install_packages
+  hugepages_2M_amount = var.hugepages_2M_amount
 
-    ssh_public_key_name_for_instances = var.admin_ssh_keys
+  gcp_project = var.gcp_project
 
-    host_type = var.host_type
-    private_key_absolute_path = var.private_key_absolute_path
+  ssh_public_key_name_for_instances = var.admin_ssh_keys
+
+  host_type                 = var.host_type
+  private_key_absolute_path = var.private_key_absolute_path
 }
 
-/*
+
 module "mayastor-dependencies" {
   source = "./modules/mayastor-dependencies"
 
@@ -25,9 +25,14 @@ module "mayastor-dependencies" {
     for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) :
     worker.name => worker.public_ip
   }
+
+  private_key_absolute_path = var.private_key_absolute_path
+
   depends_on = [module.k8s]
 }
 
+
+/*
 module "mayastor" {
   source = "./modules/mayastor"
 
