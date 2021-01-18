@@ -10,12 +10,12 @@ provider "kubernetes" {
 
 resource "hcloud_ssh_key" "admin_ssh_keys" {
   for_each   = var.admin_ssh_keys
-  name       = each.key
+  name       = "${each.key}-${var.cluster_name}"
   public_key = lookup(each.value, "key_file", "__missing__") == "__missing__" ? lookup(each.value, "key_data") : file(lookup(each.value, "key_file"))
 }
 
 resource "hcloud_server" "master" {
-  name        = "master"
+  name        = "master-${var.cluster_name}"
   server_type = var.master_type
   image       = var.master_image
   ssh_keys    = [for key in hcloud_ssh_key.admin_ssh_keys : key.id]
@@ -74,7 +74,7 @@ resource "hcloud_server" "master" {
 
 resource "hcloud_server" "node" {
   count       = var.node_count
-  name        = "node-${count.index + 1}"
+  name        = "node-${count.index}-${var.cluster_name}"
   server_type = var.node_type
   image       = var.node_image
   depends_on  = [hcloud_server.master]

@@ -76,3 +76,8 @@ variable "docker_insecure_registry" {
   description = "Set trusted docker registry on worker nodes (handy for private registry)"
   default     = ""
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "Cluster name. Used as a suffix for SSH keys, node names and volumes."
+}

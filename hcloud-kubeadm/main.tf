@@ -2,6 +2,7 @@ module "k8s" {
   source = "./modules/k8s"
 
   admin_ssh_keys    = var.admin_ssh_keys
+  cluster_name      = var.cluster_name
   hcloud_csi_token  = var.hcloud_csi_token
   hcloud_token      = var.hcloud_token
   hetzner_location  = var.hetzner_location
