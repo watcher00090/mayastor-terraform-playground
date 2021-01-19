@@ -4,7 +4,6 @@ variable "install_packages" {}
 variable "hugepages_2M_amount" {}
 variable "gcp_project" {}
 variable "ssh_public_key_name_for_instances" {}
-variable "private_key_absolute_path" {}
 variable "host_type" {}
 
 variable "docker_version" {

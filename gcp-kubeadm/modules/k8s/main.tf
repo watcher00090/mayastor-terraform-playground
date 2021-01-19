@@ -73,7 +73,7 @@ resource "google_compute_instance" "master" {
     host        = self.network_interface.0.access_config.0.nat_ip
     type        = "ssh"
     user        = "root"
-    private_key = file(var.private_key_absolute_path)
+    agent       = true
   }
 
   # enable root ssh login to instance
@@ -81,7 +81,7 @@ resource "google_compute_instance" "master" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
-      PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
+      HELPER_COMMANDS_FILE_PATH = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
     }
   }
 
@@ -139,8 +139,8 @@ resource "google_compute_instance" "master" {
       K8S_CONFIG                = local.k8s_config
       KUBEADM_JOIN              = local.kubeadm_join
       SSH_HOST                  = self.network_interface.0.access_config.0.nat_ip
-      PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
       WINDOWS_MODULE_PATH       = local.windows_module_path
+      HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\files\\helper-commands-copy-k8s-secrets-batch.txt"
     }
   }
 
@@ -170,24 +170,12 @@ resource "google_compute_instance" "node" {
     }
   }
 
-  #connection {
-  #    host = self.network_interface.0.access_config.0.nat_ip
-  #    type = "ssh"
-  #    user = "ubuntu-user"
-  #    private_key = file("C:/Users/pcp071098/Documents/mayastor-terraform-gcp.pem")
-  #}
-
-  # Disable Google's OS-login so that ssh can complete
-  # provisioner "local-exec" {
-  #  command = "gcloud compute instances add-metadata master --metadata enable-oslogin=FALSE"
-  # }
-
   # enable root ssh login to instance
   provisioner "local-exec" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
-      PRIVATE_KEY_ABSOLUTE_PATH = var.private_key_absolute_path
+      HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" 
     }
   }
 
@@ -195,7 +183,7 @@ resource "google_compute_instance" "node" {
     host        = self.network_interface.0.access_config.0.nat_ip
     type        = "ssh"
     user        = "root"
-    private_key = file(var.private_key_absolute_path)
+    agent       = true
   }
 
   provisioner "remote-exec" {
@@ -268,7 +256,7 @@ resource "null_resource" "cluster_firewall_master" {
     host        = self.triggers.k8s_master_ipv4
     type        = "ssh"
     user        = "root"
-    private_key = file(var.private_key_absolute_path)
+    agent       = true
   }
 
   provisioner "file" {
@@ -308,7 +296,7 @@ resource "null_resource" "cluster_firewall_node" {
     host        = self.triggers.k8s_node_ipv4
     type        = "ssh"
     user        = "root"
-    private_key = file(var.private_key_absolute_path)
+    agent       = true
   }
 
   provisioner "file" {

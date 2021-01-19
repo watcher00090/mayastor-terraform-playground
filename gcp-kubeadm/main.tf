@@ -12,7 +12,6 @@ module "k8s" {
   ssh_public_key_name_for_instances = var.admin_ssh_keys
 
   host_type                 = var.host_type
-  private_key_absolute_path = var.private_key_absolute_path
 }
 
 
@@ -25,8 +24,6 @@ module "mayastor-dependencies" {
     for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) :
     worker.name => worker.public_ip
   }
-
-  private_key_absolute_path = var.private_key_absolute_path
 
   depends_on = [module.k8s]
 }

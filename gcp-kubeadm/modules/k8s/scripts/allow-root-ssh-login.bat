@@ -1,2 +1,5 @@
-ssh -n -i %PRIVATE_KEY_ABSOLUTE_PATH% -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% "sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config"
-ssh -n -i %PRIVATE_KEY_ABSOLUTE_PATH% -o UserKnownHostsFile=%USERPROFILE%/.ssh/known_hosts -o StrictHostKeyChecking=no -t ubuntu-user@%INSTANCE_IPV4_ADDRESS% "sudo systemctl restart ssh"
+rem hacky approach for adding the public key to PuTTY's local registry
+echo y | pscp -P 22 ubuntu-user@%INSTANCE_IPV4_ADDRESS%:/home/ubuntu-user/dummy-file.txt .
+
+rem allow root SSH login
+putty ubuntu-user@%INSTANCE_IPV4_ADDRESS% -m %HELPER_COMMANDS_FILE_PATH%
