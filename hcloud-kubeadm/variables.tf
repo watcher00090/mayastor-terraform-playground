@@ -29,6 +29,12 @@ variable "admin_ssh_keys" {
   }
 }
 
+variable "existing_ssh_keys" {
+  type        = list(string)
+  description = "Use following keys (by name) from HCloud project. Keys must already exist in the project."
+  default     = []
+}
+
 variable "mayastor_use_develop_images" {
   type        = bool
   description = "Deploy 'develop' version of Mayastor instead of latest release. Beware, here be dragons!"

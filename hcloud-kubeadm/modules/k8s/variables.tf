@@ -30,3 +30,8 @@ variable "cluster_name" {
   type        = string
   description = "Cluster name. Used as a suffix for SSH keys, node names and volumes."
 }
+
+variable "existing_ssh_keys" {
+  type        = list(string)
+  description = "Use following keys (by name) from HCloud project. Keys must already exist in the project."
+}
