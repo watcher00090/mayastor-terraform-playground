@@ -16,6 +16,7 @@ module "mayastor-dependencies" {
   source = "./modules/mayastor-dependencies"
 
   docker_insecure_registry = var.docker_insecure_registry
+  k8s_master_ip            = module.k8s.master_ip
 
   workers = {
     for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) :

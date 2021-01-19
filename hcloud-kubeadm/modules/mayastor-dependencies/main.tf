@@ -24,3 +24,21 @@ resource "null_resource" "mayastor_dependencies" {
   }
 }
 
+// Set label openebs.io/engine=mayastor on all cluster nodes - we want to run MSN on all nodes
+resource "null_resource" "mayastor_node_label" {
+  for_each = toset(keys(var.workers))
+  triggers = {
+    k8s_master_ip = var.k8s_master_ip
+  }
+  connection {
+    host = self.triggers.k8s_master_ip
+  }
+  provisioner "remote-exec" {
+    inline = ["kubectl label node \"${each.key}\" openebs.io/engine=mayastor"]
+  }
+  provisioner "remote-exec" {
+    when   = destroy
+    inline = ["kubectl label node \"${each.key}\" openebs.io/engine-"]
+  }
+}
+

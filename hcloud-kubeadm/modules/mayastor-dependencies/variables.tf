@@ -14,3 +14,5 @@ variable "docker_insecure_registry" {
   description = "Set trusted docker registry on worker nodes (handy for private registry)"
   default     = ""
 }
+
+variable "k8s_master_ip" {}

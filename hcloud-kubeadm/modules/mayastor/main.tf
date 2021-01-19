@@ -28,27 +28,8 @@ resource "null_resource" "server_upload_dir" {
   }
 }
 
-// Set label openebs.io/engine=mayastor on all cluster nodes - we want to run MSN on all nodes
-resource "null_resource" "mayastor_node_label" {
-  for_each = toset(var.node_names)
-  triggers = {
-    k8s_master_ip = var.k8s_master_ip
-  }
-  connection {
-    host = self.triggers.k8s_master_ip
-  }
-  provisioner "remote-exec" {
-    inline = ["kubectl label node \"${each.key}\" openebs.io/engine=mayastor"]
-  }
-  provisioner "remote-exec" {
-    when   = destroy
-    inline = ["kubectl label node \"${each.key}\" openebs.io/engine-"]
-  }
-}
-
 // FIXME it would be nice to have yamls in HCL; but rather to have them in mayadata repo as snippets or TF module
 resource "null_resource" "mayastor" {
-  depends_on = [null_resource.mayastor_node_label]
   triggers = {
     k8s_master_ip      = var.k8s_master_ip
     mayastor_image_tag = var.mayastor_use_develop_images ? "develop" : "master"
