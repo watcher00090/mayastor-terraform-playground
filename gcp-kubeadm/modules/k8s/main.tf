@@ -21,13 +21,11 @@ locals {
 
 # Ubuntu 20 LTS
 data "google_compute_image" "my_ubuntu_image" {
-  # name = "ubuntu-minimal-2004-focal-v20210113"
-  # project = "ubuntu-os-cloud"
-  name    = "debian-9-stretch-v20201216"
-  project = "debian-cloud"
+  # name    = "debian-9-stretch-v20201216"
+  # project = "debian-cloud"
 
-  #name = "ubuntu-2004-focal-v20210112"
-  #project = "ubuntu-os-cloud"
+  name = "ubuntu-2004-focal-v20210119a"
+  project = "ubuntu-os-cloud"   
 }
 
 data "google_client_openid_userinfo" "me" {
@@ -91,6 +89,7 @@ resource "google_compute_instance" "master" {
     environment = {
       INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
       HELPER_COMMANDS_FILE_PATH = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
+      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
     }
   }
 
@@ -185,6 +184,7 @@ resource "google_compute_instance" "node" {
     environment = {
       INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
       HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" 
+      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
     }
   }
 

@@ -136,8 +136,8 @@ sudo apt-get -qq install -y \
     gnupg-agent \
     software-properties-common
 # sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-sudo curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
 #   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
 #  "deb [arch=amd64] https://download.docker.com/linux/debian \
