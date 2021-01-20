@@ -36,12 +36,10 @@ variable "hugepages_2M_amount" {
 variable "host_type" {
   type        = string
   description = "The type of host being used locally. Currently accepts only Linux, Windows, and OSX. Case insensitive."
-
   validation {
     condition     = contains(["WINDOWS", "LINUX", "OSX"], upper(var.host_type))
     error_message = "Error, invalid host type. Only accepts Windows, Linux, and OSX. Please try again. Case insensitive."
   }
-
 }
 
 variable "admin_ssh_keys" {

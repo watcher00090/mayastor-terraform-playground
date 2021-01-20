@@ -50,6 +50,9 @@ resource "google_compute_instance" "master" {
   metadata = {
     block-project-ssh-keys = false
   }
+  lifecycle {
+    ignore_changes = ["attached_disk"]
+  }
 
   boot_disk {
     initialize_params {
@@ -148,6 +151,9 @@ resource "google_compute_instance" "node" {
   count        = var.node_count
   name         = "worker-${count.index + 1}"
   machine_type = "e2-standard-2"
+  lifecycle {
+    ignore_changes = ["attached_disk"]
+  }
 
   metadata = {
     block-project-ssh-keys = false
