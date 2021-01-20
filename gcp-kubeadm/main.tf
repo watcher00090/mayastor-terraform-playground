@@ -28,11 +28,10 @@ module "mayastor-dependencies" {
   depends_on = [module.k8s]
 }
 
-
-/*
 module "mayastor" {
   source = "./modules/mayastor"
 
+  host_type                   = var.host_type
   count                       = var.deploy_mayastor ? 1 : 0
   depends_on                  = [module.mayastor-dependencies]
   k8s_master_ip               = module.k8s.master_ip
@@ -43,4 +42,3 @@ module "mayastor" {
   server_upload_dir           = var.server_upload_dir
 }
 
-*/

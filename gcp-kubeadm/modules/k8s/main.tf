@@ -31,16 +31,6 @@ data "google_compute_image" "my_ubuntu_image" {
 data "google_client_openid_userinfo" "me" {
 }
 
-#data "null_data_source" "map_of_ssh_key_pairs" {
-#  dynamic "key_pairs" {
-#    for_each   = var.admin_ssh_keys
-#    iterator = "each"
-#    content = {
-#      each.key = lookup(each.value, "key_file", "__missing__") == "__missing__" ? lookup(each.value, "key_data") : file(lookup(each.value, "key_file"))
-#    }
-#  }
-#}
-
 resource "google_compute_project_metadata" "my_ssh_key" {
   metadata = {
     ssh-keys = local.ssh_keys_string
@@ -53,8 +43,7 @@ output "windows_module_path" {
   description = "windows module path"
 }
 
-
-# 'self.network_interface.0.access_config.0.nat_ip' is the ipv4 address of self
+# self.network_interface.0.access_config.0.nat_ip = ipv4 address of self
 resource "google_compute_instance" "master" {
   name         = "master"
   machine_type = "e2-standard-2"
