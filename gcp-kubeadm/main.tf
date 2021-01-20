@@ -9,7 +9,7 @@ module "k8s" {
 
   gcp_project = var.gcp_project
 
-  ssh_public_key_name_for_instances = var.admin_ssh_keys
+  admin_ssh_keys = var.admin_ssh_keys
 
   host_type                 = var.host_type
 }

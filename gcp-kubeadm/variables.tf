@@ -45,11 +45,8 @@ variable "host_type" {
 }
 
 variable "admin_ssh_keys" {
-  description = "Map of maps for configuring ssh keys. Keys are key names in GCP, values are the contents of the ssh public keys."
-  default     = "key1"
-  #default = {
-  #  "key1" : { "key_file" = "~/.ssh/id_rsa.pub" },
-  #}
+  type = list(map(map(string)))
+  description = "Map of maps for configuring public SSH keys for the project. Keys are key names in GCP, values are maps containing either the key 'key_data' associated with the contents of the public key, or 'key_file' associated with an absolute path to the public key file."
 }
 
 variable "mayastor_use_develop_images" {
