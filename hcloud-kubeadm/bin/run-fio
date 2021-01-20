@@ -1,0 +1,30 @@
+#! /bin/sh
+
+set -e
+
+. "$(dirname "$0")/export-kubeconfig.sh"
+
+check_pod() {
+	# $1 - pod name
+	# $2 - yaml that would deploy pod
+
+	if ! kubectl get pods | grep -q "$1.*Running"; then
+		echo "Cannot find running pod '$1' in current cluster (using $(dirname "$0")/bin/export-kubeconfig.sh)"
+		echo "Make sure pod '$1' is in the state Running"
+		echo "You can deploy it with: kubectl apply -f $(realpath "$(dirname "$0")/../$2")"
+		exit 1
+	fi
+}
+
+
+case "$1" in
+	mayastor)
+		check_pod fio-mayastor test-pod-fio-mayastor.yaml
+		kubectl exec -it fio-mayastor -- fio --name=benchtest --size=800m --filename=/volume/test --direct=1 --rw=randrw --ioengine=libaio --bs=4k --iodepth=16 --numjobs=1 --time_based --runtime=60
+		;;
+	hcloud)
+		check_pod fio-hcloud test-pod-fio-hcloud-csi.yaml
+		kubectl exec -it fio-hcloud -- fio --name=benchtest --size=800m --filename=/volume/test --direct=1 --rw=randrw --ioengine=libaio --bs=4k --iodepth=16 --numjobs=1 --time_based --runtime=60
+		;;
+	*) echo "$0: (hcloud|mayastor)"; exit 1;;
+esac
