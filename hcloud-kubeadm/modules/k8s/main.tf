@@ -10,15 +10,21 @@ provider "kubernetes" {
 
 resource "hcloud_ssh_key" "admin_ssh_keys" {
   for_each   = var.admin_ssh_keys
-  name       = each.key
+  name       = "${each.key}-${var.cluster_name}"
   public_key = lookup(each.value, "key_file", "__missing__") == "__missing__" ? lookup(each.value, "key_data") : file(lookup(each.value, "key_file"))
 }
 
+// include keys configured in the project with label "admin"
+data "hcloud_ssh_key" "existing_ssh_keys" {
+  for_each = toset(var.existing_ssh_keys)
+  name     = each.key
+}
+
 resource "hcloud_server" "master" {
-  name        = "master"
+  name        = "master-${var.cluster_name}"
   server_type = var.master_type
   image       = var.master_image
-  ssh_keys    = [for key in hcloud_ssh_key.admin_ssh_keys : key.id]
+  ssh_keys    = concat([for key in hcloud_ssh_key.admin_ssh_keys : key.id], [for key in data.hcloud_ssh_key.existing_ssh_keys : key.id])
   location    = var.hetzner_location
 
   connection {
@@ -74,11 +80,11 @@ resource "hcloud_server" "master" {
 
 resource "hcloud_server" "node" {
   count       = var.node_count
-  name        = "node-${count.index + 1}"
+  name        = "node-${count.index}-${var.cluster_name}"
   server_type = var.node_type
   image       = var.node_image
   depends_on  = [hcloud_server.master]
-  ssh_keys    = [for key in hcloud_ssh_key.admin_ssh_keys : key.id]
+  ssh_keys    = concat([for key in hcloud_ssh_key.admin_ssh_keys : key.id], [for key in data.hcloud_ssh_key.existing_ssh_keys : key.id])
   location    = var.hetzner_location
 
   // FIXME: re-create node on change in the scripts content; triggers do not work here

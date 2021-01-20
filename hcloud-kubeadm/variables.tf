@@ -29,6 +29,12 @@ variable "admin_ssh_keys" {
   }
 }
 
+variable "existing_ssh_keys" {
+  type        = list(string)
+  description = "Use following keys (by name) from HCloud project. Keys must already exist in the project."
+  default     = []
+}
+
 variable "mayastor_use_develop_images" {
   type        = bool
   description = "Deploy 'develop' version of Mayastor instead of latest release. Beware, here be dragons!"
@@ -75,4 +81,9 @@ variable "docker_insecure_registry" {
   type        = string
   description = "Set trusted docker registry on worker nodes (handy for private registry)"
   default     = ""
+}
+
+variable "cluster_name" {
+  type        = string
+  description = "Cluster name. Used as a suffix for SSH keys, node names and volumes."
 }
