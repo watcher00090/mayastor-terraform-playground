@@ -105,6 +105,8 @@ resource "google_compute_instance" "master" {
     content = templatefile("${path.module}/templates/master.sh", {
       feature_gates    = var.feature_gates,
       pod_network_cidr = var.pod_network_cidr,
+      master_public_ipv4_address = self.network_interface.0.access_config.0.nat_ip,
+      master_private_ipv4_address = self.network_interface.0.network_ip
     })
     destination = "${var.server_upload_dir}/master.sh"
   }
@@ -141,7 +143,7 @@ resource "google_compute_instance" "node" {
   name         = "worker-${count.index + 1}"
   machine_type = "e2-standard-2"
   lifecycle {
-    ignore_changes = ["attached_disk"]
+    ignore_changes = [attached_disk]
   }
 
   metadata = {

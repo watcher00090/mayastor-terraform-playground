@@ -14,14 +14,27 @@ COMMIT
 EOF
 sudo systemctl restart local-iptables.service
 
-# Initialize Cluster
+# Initialize Cluster 
 if [ -n "${feature_gates}" ]; then
-	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}"
+	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-advertise-address=0.0.0.0 --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
 else
-	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}"
+	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --apiserver-advertise-address=0.0.0.0 --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
 fi
 
 sudo systemctl enable docker kubelet
 
-sudo mkdir -p "$HOME/.kube"
-sudo cp /etc/kubernetes/admin.conf "$HOME/.kube/config"
+# Prepare kubeconfig file for download to local machine
+mkdir -p /home/ubuntu/.kube
+cp /etc/kubernetes/admin.conf /home/ubuntu
+cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config # enable kubectl on the node
+sudo mkdir /root/.kube
+sudo cp /etc/kubernetes/admin.conf /root/.kube/config
+chown ubuntu:ubuntu /home/ubuntu/admin.conf /home/ubuntu/.kube/config
+
+# Set server address to the public ip of the master in admin.conf
+# kubectl --kubeconfig /home/ubuntu/admin.conf config set-cluster kubernetes --server https://${master_public_ipv4_address}:6443
+
+# Indicate completion of bootstrapping on this node
+touch /home/ubuntu/done
+
+echo ${master_public_ipv4_address} > /home/ubuntu/server_address.txt
