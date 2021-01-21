@@ -1,15 +1,3 @@
-provider "google" {
-  project = var.gcp_project
-  region  = "us-central1"
-  zone    = "us-central1-c"
-}
-
-# TODO: Add some docs about why we are using port 6443
-provider "kubernetes" {
-  config_path = local.k8s_config
-  host        = "https://${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:6443"
-}
-
 locals {
   k8s_config          = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\admin.conf" : "${path.module}/secrets/admin.conf"
   kubeadm_join        = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\kubeadm_join" : "${path.module}/secrets/kubeadm_join"
@@ -51,7 +39,7 @@ resource "google_compute_instance" "master" {
     block-project-ssh-keys = false
   }
   lifecycle {
-    ignore_changes = ["attached_disk"]
+    ignore_changes = [attached_disk]
   }
 
   boot_disk {
@@ -60,9 +48,10 @@ resource "google_compute_instance" "master" {
     }
   }
 
+
   network_interface {
-    # default network is created for all GCP projects
-    network = "default"
+    subnetwork = google_compute_subnetwork.subnetwork_1.name
+    # network = "default"
     access_config {
 
     }
@@ -144,7 +133,7 @@ resource "google_compute_instance" "master" {
     }
   }
 
-  depends_on = [google_compute_project_metadata.my_ssh_key]
+  depends_on = [google_compute_project_metadata.my_ssh_key, google_compute_firewall.firewall_1, google_compute_firewall.allow_internal_traffic]
 }
 
 resource "google_compute_instance" "node" {
@@ -166,8 +155,8 @@ resource "google_compute_instance" "node" {
   }
 
   network_interface {
-    # default network is created for all GCP projects
-    network = "default"
+    subnetwork = google_compute_subnetwork.subnetwork_1.name
+    # network = "default"
     access_config {
 
     }
