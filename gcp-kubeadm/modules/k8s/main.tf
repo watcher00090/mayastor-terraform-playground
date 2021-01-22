@@ -3,7 +3,9 @@ locals {
   kubeadm_join        = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\kubeadm_join" : "${path.module}/secrets/kubeadm_join"
   windows_module_path = replace(path.module, "///", "\\")
   on_windows_host     = upper(var.host_type) == "WINDOWS" ? true : false
-  list_of_ssh_strings = [for entry in var.admin_ssh_keys: "${keys(entry)[0]}:${lookup(values(entry)[0], "key_file", "__missing__") == "__missing__" ? lookup(values(entry)[0], "key_data") : file(lookup(values(entry)[0], "key_file"))}"]
+  dummy_user_name     = "ubuntu-admin"
+  list_of_ssh_strings = [for key in keys(var.admin_ssh_keys): "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
+  extra_ssh_string = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
   ssh_keys_string = join("\n", local.list_of_ssh_strings)
 }
 
@@ -21,7 +23,7 @@ data "google_client_openid_userinfo" "me" {
 
 resource "google_compute_project_metadata" "my_ssh_key" {
   metadata = {
-    ssh-keys = local.ssh_keys_string
+    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
   }
   project = var.gcp_project
 }
@@ -71,6 +73,7 @@ resource "google_compute_instance" "master" {
       INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
       HELPER_COMMANDS_FILE_PATH = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
       HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
+      USER_NAME = local.dummy_user_name
     }
   }
 
@@ -171,6 +174,7 @@ resource "google_compute_instance" "node" {
       INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
       HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" 
       HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
+      USER_NAME = local.dummy_user_name
     }
   }
 
