@@ -1,6 +1,6 @@
 resource "null_resource" "flannel" {
   triggers = {
-    flannel_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\templates\\kube-flannel-wireguard.yaml" : "${path.module}/templates/kube-flannel-wireguard.yaml", {
+    flannel_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\files\\kube-flannel-wireguard.yaml" : "${path.module}/files/kube-flannel-wireguard.yaml", {
       pod_network_cidr = var.pod_network_cidr,
     }),
     gcp_master     = google_compute_instance.master.network_interface.0.access_config.0.nat_ip

@@ -134,7 +134,7 @@ resource "null_resource" "mayastor-pool-local" {
   for_each   = toset(var.node_names)
   triggers = {
     k8s_master_ip = var.k8s_master_ip
-    mayastor_pool_local_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\templates\\mayastor-pool-local.yaml" : "${path.module}/templates/mayastor-pool-local.yaml", {
+    mayastor_pool_local_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\files\\mayastor-pool-local.yaml" : "${path.module}/files/mayastor-pool-local.yaml", {
       mayastor_disk = var.mayastor_disk,
       node          = each.key,
     }),
@@ -165,7 +165,7 @@ resource "null_resource" "mayastor-storageclass-nvme" {
   depends_on = [null_resource.mayastor-pool-local, null_resource.validate_replica_count]
   triggers = {
     k8s_master_ip = var.k8s_master_ip
-    mayastor_storageclass_local_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\templates\\mayastor-storageclass-nvme.yaml" : "${path.module}/templates/mayastor-storageclass-nvme.yaml", {
+    mayastor_storageclass_local_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\files\\mayastor-storageclass-nvme.yaml" : "${path.module}/files/mayastor-storageclass-nvme.yaml", {
       replicas = var.mayastor_replicas == -1 ? length(var.node_names) : var.mayastor_replicas,
     }),
     server_upload_dir = var.server_upload_dir

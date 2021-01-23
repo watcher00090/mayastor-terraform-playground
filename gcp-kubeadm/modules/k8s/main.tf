@@ -21,6 +21,16 @@ data "google_compute_image" "my_ubuntu_image" {
 data "google_client_openid_userinfo" "me" {
 }
 
+# resource "null_resource" "prepare_line_endings" {
+#   count = local.on_windows_host ? 1 : 0
+#   provisioner "local-exec" {
+#     command = local.on_windows_host ? "utils\\convert-to-linux.bat" : "utils/convert-to-linux.bat"
+#     environment = {
+#       UTILS_SCRIPTS_DIR = "utils"
+#     }
+#   }
+# }
+
 resource "google_compute_project_metadata" "my_ssh_key" {
   metadata = {
     ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
@@ -91,7 +101,7 @@ resource "google_compute_instance" "master" {
   }
 
   provisioner "file" {
-    content = templatefile("${path.module}/templates/bootstrap.sh", {
+    content = templatefile("${path.module}/files/bootstrap.sh", {
       docker_version     = var.docker_version,
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
@@ -105,7 +115,7 @@ resource "google_compute_instance" "master" {
   }
 
   provisioner "file" {
-    content = templatefile("${path.module}/templates/master.sh", {
+    content = templatefile("${path.module}/files/master.sh", {
       feature_gates    = var.feature_gates,
       pod_network_cidr = var.pod_network_cidr,
       master_public_ipv4_address = self.network_interface.0.access_config.0.nat_ip,
@@ -199,7 +209,7 @@ resource "google_compute_instance" "node" {
   }
 
   provisioner "file" {
-    content = templatefile("${path.module}/templates/bootstrap.sh", {
+    content = templatefile("${path.module}/files/bootstrap.sh", {
       docker_version     = var.docker_version,
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
@@ -242,7 +252,7 @@ resource "google_compute_instance" "node" {
 
 resource "null_resource" "cluster_firewall_master" {
   triggers = {
-    deploy_script = templatefile("${path.module}/templates/generate-firewall.sh", {
+    deploy_script = templatefile("${path.module}/files/generate-firewall.sh", {
       k8s_master_ipv4 = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
       k8s_nodes_ipv4  = join(" ", [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip]),
       master          = "true",
@@ -282,7 +292,7 @@ resource "null_resource" "cluster_firewall_master" {
 resource "null_resource" "cluster_firewall_node" {
   count = var.node_count
   triggers = {
-    deploy_script = templatefile("${path.module}/templates/generate-firewall.sh", {
+    deploy_script = templatefile("${path.module}/files/generate-firewall.sh", {
       k8s_master_ipv4 = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
       k8s_nodes_ipv4  = join(" ", [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip]),
       master          = "false",
