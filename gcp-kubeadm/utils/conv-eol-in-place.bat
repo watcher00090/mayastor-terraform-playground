@@ -3,10 +3,13 @@ setlocal EnableExtensions DisableDelayedExpansion
 
 rem // Define constants here:
 set "_IFILE=%~1"  & rem // (input file; first command line argument)
+set "_DIR=%~2"
+set "_IFILE=%_DIR%\%_IFILE%"
 set "_IEOL=0d"    & rem // (incoming line-breaks; `0d` or `0a`)
 set "_OEOL=" & rem // (outgoing line-breaks; `0d`, `0a`, `0d 0a`, ``)
 set "_TFILE1=%TEMP%\%~n0_%RANDOM%.hex" & rem // (first temporary file)
 set "_TFILE2=%TEMP%\%~n0_%RANDOM%.tmp" & rem // (second temporary file)
+echo %_IFILE%
 
 rem // Verify input file:
 < "%_IFILE%" rem/ || exit /B

@@ -21,21 +21,23 @@ data "google_compute_image" "my_ubuntu_image" {
 data "google_client_openid_userinfo" "me" {
 }
 
-# resource "null_resource" "prepare_line_endings" {
-#   count = local.on_windows_host ? 1 : 0
-#   provisioner "local-exec" {
-#     command = local.on_windows_host ? "utils\\convert-to-linux.bat" : "utils/convert-to-linux.bat"
-#     environment = {
-#       UTILS_SCRIPTS_DIR = "utils"
-#     }
-#   }
-# }
+resource "null_resource" "prepare_line_endings" {
+   count = local.on_windows_host ? 1 : 0
+   provisioner "local-exec" {
+     command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
+     environment = {
+       UTILS_SCRIPTS_DIR = "utils"
+       FILES_DIR = "${local.windows_module_path}\\files"
+     }
+   }
+}
 
 resource "google_compute_project_metadata" "my_ssh_key" {
   metadata = {
     ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
   }
   project = var.gcp_project
+  depends_on = [null_resource.prepare_line_endings]
 }
 
 output "windows_module_path" {
@@ -96,9 +98,9 @@ resource "google_compute_instance" "master" {
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \" set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \" set ff=unix | wq\""]
+  #}
 
   provisioner "file" {
     content = templatefile("${path.module}/files/bootstrap.sh", {
@@ -110,9 +112,9 @@ resource "google_compute_instance" "master" {
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
+  #}
 
   provisioner "file" {
     content = templatefile("${path.module}/files/master.sh", {
@@ -124,9 +126,9 @@ resource "google_compute_instance" "master" {
     destination = "${var.server_upload_dir}/master.sh"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/master.sh -c \"set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/master.sh -c \"set ff=unix | wq\""]
+  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -148,7 +150,7 @@ resource "google_compute_instance" "master" {
     }
   }
 
-  depends_on = [google_compute_project_metadata.my_ssh_key, google_compute_firewall.firewall_1, google_compute_firewall.allow_internal_traffic]
+  depends_on = [null_resource.prepare_line_endings, google_compute_project_metadata.my_ssh_key, google_compute_firewall.firewall_1, google_compute_firewall.allow_internal_traffic]
 }
 
 resource "google_compute_instance" "node" {
@@ -204,9 +206,9 @@ resource "google_compute_instance" "node" {
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \"set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \"set ff=unix | wq\""]
+  #}
 
   provisioner "file" {
     content = templatefile("${path.module}/files/bootstrap.sh", {
@@ -218,18 +220,18 @@ resource "google_compute_instance" "node" {
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
+  #}
 
   provisioner "file" {
     source      = local.kubeadm_join
     destination = "${var.server_upload_dir}/kubeadm_join"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/kubeadm_join -c \"set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/kubeadm_join -c \"set ff=unix | wq\""]
+  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -240,7 +242,7 @@ resource "google_compute_instance" "node" {
     ]
   }
 
-  depends_on = [google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
+  depends_on = [null_resource.prepare_line_endings, google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
 }
 
 #resource "google_ssh_key" "admin_ssh_keys" {
@@ -273,9 +275,9 @@ resource "null_resource" "cluster_firewall_master" {
     destination = "${self.triggers.server_upload_dir}/generate-firewall.sh"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
+  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -285,6 +287,7 @@ resource "null_resource" "cluster_firewall_master" {
     ]
   }
 
+  depends_on = [null_resource.prepare_line_endings]
 }
 
 # NOTE: null_resource.cluster_firewall is never destroyed (even if terraform does it it stays in effect on infra)
@@ -313,9 +316,9 @@ resource "null_resource" "cluster_firewall_node" {
     destination = "${self.triggers.server_upload_dir}/generate-firewall.sh"
   }
 
-  provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
-  }
+  #provisioner "remote-exec" {
+  #  inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
+  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -325,4 +328,5 @@ resource "null_resource" "cluster_firewall_node" {
     ]
   }
 
+  depends_on = [null_resource.prepare_line_endings]
 }
