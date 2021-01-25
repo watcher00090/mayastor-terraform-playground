@@ -44,7 +44,24 @@ module "mayastor-dependencies" {
     worker.name => worker.public_ip
   }
 
+  nodes = { 
+    for node in module.k8s.cluster_nodes : 
+    node.name => node.public_ip
+  }
+
+  master = {
+    (module.k8s.master_node.name) = (module.k8s.master_node.public_ip)
+  } 
+
   depends_on = [module.k8s]
+}
+
+module "short-delay" {
+  source = "./modules/short-delay"
+
+  host_type = var.host_type
+
+  depends_on = [module.mayastor-dependencies]
 }
 
 module "mayastor" {
@@ -52,7 +69,7 @@ module "mayastor" {
 
   host_type                   = var.host_type
   count                       = var.deploy_mayastor ? 1 : 0
-  depends_on                  = [module.mayastor-dependencies]
+  depends_on                  = [module.mayastor-dependencies, module.short-delay]
   k8s_master_ip               = module.k8s.master_ip
   mayastor_disk               = "/dev/sdb"
   mayastor_replicas           = var.mayastor_replicas
