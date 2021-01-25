@@ -3,10 +3,10 @@ resource "null_resource" "mayastor_dependencies" {
   # for_each = var.nodes
 
   connection {
-    type        = "ssh"
-    host        = each.value
-    user        = "root"
-    agent       = true
+    type  = "ssh"
+    host  = each.value
+    user  = "root"
+    agent = true
   }
 
   # NOTE: kernel is tightly correlated with image used for installation. See ../k8s/main.tf search "ubuntu/images"
@@ -32,10 +32,10 @@ resource "null_resource" "mayastor_dependencies_master" {
   # for_each = var.nodes
 
   connection {
-    type        = "ssh"
-    host        = each.value
-    user        = "root"
-    agent       = true
+    type  = "ssh"
+    host  = each.value
+    user  = "root"
+    agent = true
   }
 
   # NOTE: kernel is tightly correlated with image used for installation. See ../k8s/main.tf search "ubuntu/images"

@@ -1,6 +1,6 @@
 locals {
-  on_windows_host = upper(var.host_type) == "WINDOWS" ? true : false 
-  validate_replica_count_linux_command = <<-EOF
+  on_windows_host                        = upper(var.host_type) == "WINDOWS" ? true : false
+  validate_replica_count_linux_command   = <<-EOF
     set -e
     if [ "${var.mayastor_replicas}" -gt "${length(var.node_names)}" ]; then
       echo "Variable mayastor_replicas cannot be greater than number of cluster nodes"
@@ -10,18 +10,18 @@ locals {
   validate_replica_count_windows_command = <<-EOF
     if ${var.mayastor_replicas} GTR ${length(var.node_names)} (echo Variable mayastor_replicas cannot be greater than number of cluster nodes & exit 1)
   EOF
-  windows_module_path = replace(path.module, "///", "\\")
+  windows_module_path                    = replace(path.module, "///", "\\")
 }
 
 resource "null_resource" "prepare_line_endings" {
-   count = local.on_windows_host ? 1 : 0
-   provisioner "local-exec" {
-     command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
-     environment = {
-       UTILS_SCRIPTS_DIR = "utils"
-       FILES_DIR = "${local.windows_module_path}\\files"
-     }
-   }
+  count = local.on_windows_host ? 1 : 0
+  provisioner "local-exec" {
+    command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
+    environment = {
+      UTILS_SCRIPTS_DIR = "utils"
+      FILES_DIR         = "${local.windows_module_path}\\files"
+    }
+  }
 }
 
 # variable validators cannot reference other variables, let's validate relation
@@ -39,8 +39,8 @@ resource "null_resource" "server_upload_dir" {
     server_upload_dir = var.server_upload_dir
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
   provisioner "remote-exec" {
@@ -59,8 +59,8 @@ resource "null_resource" "mayastor_node_label" {
     k8s_master_ip = var.k8s_master_ip
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
   provisioner "remote-exec" {
@@ -80,8 +80,8 @@ resource "null_resource" "mayastor" {
     mayastor_image_tag = var.mayastor_use_develop_images ? "develop" : "master"
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
   provisioner "remote-exec" {
@@ -120,8 +120,8 @@ resource "null_resource" "mayastor_use_develop_images" {
     k8s_master_ip = var.k8s_master_ip
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
   provisioner "remote-exec" {
@@ -155,8 +155,8 @@ resource "null_resource" "mayastor-pool-local" {
     server_upload_dir = var.server_upload_dir
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
   provisioner "file" {
@@ -185,8 +185,8 @@ resource "null_resource" "mayastor-storageclass-nvme" {
     server_upload_dir = var.server_upload_dir
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
   provisioner "file" {

@@ -4,7 +4,7 @@ locals {
 }
 
 resource "null_resource" "short_delay" {
-    provisioner "local-exec" {
-        command = local.on_windows_host ? "ping -n 180 127.0.0.1 >nul" : "sleep(180)"
-    }
+  provisioner "local-exec" {
+    command = local.on_windows_host ? "ping -n 180 127.0.0.1 >nul" : "sleep(180)"
+  }
 }

@@ -14,8 +14,8 @@ resource "null_resource" "metrics_server" {
     })
   }
   connection {
-    host = self.triggers.k8s_master_ip
-    type = "ssh"
+    host  = self.triggers.k8s_master_ip
+    type  = "ssh"
     agent = true
   }
 

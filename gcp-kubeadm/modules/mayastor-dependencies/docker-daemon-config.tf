@@ -9,10 +9,10 @@ resource "null_resource" "docker_daemon_config_workers" {
   for_each = var.nodes
 
   connection {
-    type        = "ssh"
-    host        = jsondecode(self.triggers.workers)[each.key]
-    user        = "root"
-    agent       = true
+    type  = "ssh"
+    host  = jsondecode(self.triggers.workers)[each.key]
+    user  = "root"
+    agent = true
   }
 
   provisioner "file" {

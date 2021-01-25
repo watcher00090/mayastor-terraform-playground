@@ -1,6 +1,6 @@
 resource "google_compute_firewall" "firewall_1" {
-  name    = "firewall-1"
-  network = google_compute_network.network_1.name
+  name          = "firewall-1"
+  network       = google_compute_network.network_1.name
   source_ranges = ["0.0.0.0/0"]
 
   allow {
@@ -14,23 +14,23 @@ resource "google_compute_firewall" "firewall_1" {
 }
 
 resource "google_compute_firewall" "allow_internal_traffic" {
-    name = "allow-internal-traffic-firewall"
-    network = google_compute_network.network_1.name
-    source_ranges = ["10.128.0.0/9"]
+  name          = "allow-internal-traffic-firewall"
+  network       = google_compute_network.network_1.name
+  source_ranges = ["10.128.0.0/9"]
 
-    allow {
-        protocol = "tcp"
-        ports = ["0-65535"]
-    }
+  allow {
+    protocol = "tcp"
+    ports    = ["0-65535"]
+  }
 
-    allow {
-        protocol = "udp"
-        ports = ["0-65535"]
-    }
+  allow {
+    protocol = "udp"
+    ports    = ["0-65535"]
+  }
 
-    allow {
-        protocol = "icmp"
-    }
+  allow {
+    protocol = "icmp"
+  }
 }
 
 resource "google_compute_subnetwork" "subnetwork_1" {

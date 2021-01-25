@@ -4,12 +4,12 @@ variable "nodes" {
 }
 
 variable "master" {
-  type = map(string)
+  type        = map(string)
   description = "{node_name => public_ip} for the master node"
 }
 
 variable "workers" {
-  type = map(string)
+  type        = map(string)
   description = "A map of worker_node_name=>worker_public_ip"
 }
 

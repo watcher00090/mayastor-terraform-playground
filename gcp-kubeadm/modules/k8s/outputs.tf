@@ -4,7 +4,7 @@ output "master_ip" {
 
 output "master_node" {
   value = {
-    name = google_compute_instance.master.name
+    name      = google_compute_instance.master.name
     public_ip = google_compute_instance.master.network_interface.0.access_config.0.nat_ip
   }
 }

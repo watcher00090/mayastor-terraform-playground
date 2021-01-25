@@ -4,9 +4,9 @@ locals {
   windows_module_path = replace(path.module, "///", "\\")
   on_windows_host     = upper(var.host_type) == "WINDOWS" ? true : false
   dummy_user_name     = "ubuntu-admin"
-  list_of_ssh_strings = [for key in keys(var.admin_ssh_keys): "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
-  extra_ssh_string = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
-  ssh_keys_string = join("\n", local.list_of_ssh_strings)
+  list_of_ssh_strings = [for key in keys(var.admin_ssh_keys) : "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
+  extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
+  ssh_keys_string     = join("\n", local.list_of_ssh_strings)
 }
 
 # Ubuntu 20 LTS
@@ -14,29 +14,29 @@ data "google_compute_image" "my_ubuntu_image" {
   # name    = "debian-9-stretch-v20201216"
   # project = "debian-cloud"
 
-  name = "ubuntu-2004-focal-v20210119a"
-  project = "ubuntu-os-cloud"   
+  name    = "ubuntu-2004-focal-v20210119a"
+  project = "ubuntu-os-cloud"
 }
 
 data "google_client_openid_userinfo" "me" {
 }
 
 resource "null_resource" "prepare_line_endings" {
-   count = local.on_windows_host ? 1 : 0
-   provisioner "local-exec" {
-     command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
-     environment = {
-       UTILS_SCRIPTS_DIR = "utils"
-       FILES_DIR = "${local.windows_module_path}\\files"
-     }
-   }
+  count = local.on_windows_host ? 1 : 0
+  provisioner "local-exec" {
+    command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
+    environment = {
+      UTILS_SCRIPTS_DIR = "utils"
+      FILES_DIR         = "${local.windows_module_path}\\files"
+    }
+  }
 }
 
 resource "google_compute_project_metadata" "my_ssh_key" {
   metadata = {
     ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
   }
-  project = var.gcp_project
+  project    = var.gcp_project
   depends_on = [null_resource.prepare_line_endings]
 }
 
@@ -73,20 +73,20 @@ resource "google_compute_instance" "master" {
   }
 
   connection {
-    host        = self.network_interface.0.access_config.0.nat_ip
-    type        = "ssh"
-    user        = "root"
-    agent       = true
+    host  = self.network_interface.0.access_config.0.nat_ip
+    type  = "ssh"
+    user  = "root"
+    agent = true
   }
 
   # enable root ssh login to instance
   provisioner "local-exec" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
-      INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
+      INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
+      HELPER_COMMANDS_FILE_PATH      = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
       HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
-      USER_NAME = local.dummy_user_name
+      USER_NAME                      = local.dummy_user_name
     }
   }
 
@@ -119,9 +119,9 @@ resource "google_compute_instance" "master" {
 
   provisioner "file" {
     content = templatefile("${path.module}/files/master.sh", {
-      feature_gates    = var.feature_gates,
-      pod_network_cidr = var.pod_network_cidr,
-      master_public_ipv4_address = self.network_interface.0.access_config.0.nat_ip,
+      feature_gates               = var.feature_gates,
+      pod_network_cidr            = var.pod_network_cidr,
+      master_public_ipv4_address  = self.network_interface.0.access_config.0.nat_ip,
       master_private_ipv4_address = self.network_interface.0.network_ip
     })
     destination = "${var.server_upload_dir}/master.sh"
@@ -155,8 +155,8 @@ resource "google_compute_instance" "master" {
 }
 
 resource "google_compute_instance" "node" {
-  count        = var.node_count
-  name         = "worker-${count.index + 1}"
+  count = var.node_count
+  name  = "worker-${count.index + 1}"
   # machine_type = "n2-standard-2"
   machine_type = "c2-standard-4"
   lifecycle {
@@ -185,18 +185,18 @@ resource "google_compute_instance" "node" {
   provisioner "local-exec" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
-      INSTANCE_IPV4_ADDRESS     = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" 
+      INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
+      HELPER_COMMANDS_FILE_PATH      = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt"
       HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
-      USER_NAME = local.dummy_user_name
+      USER_NAME                      = local.dummy_user_name
     }
   }
 
   connection {
-    host        = self.network_interface.0.access_config.0.nat_ip
-    type        = "ssh"
-    user        = "root"
-    agent       = true
+    host  = self.network_interface.0.access_config.0.nat_ip
+    type  = "ssh"
+    user  = "root"
+    agent = true
   }
 
   provisioner "remote-exec" {
@@ -266,10 +266,10 @@ resource "null_resource" "cluster_firewall_master" {
   }
 
   connection {
-    host        = self.triggers.k8s_master_ipv4
-    type        = "ssh"
-    user        = "root"
-    agent       = true
+    host  = self.triggers.k8s_master_ipv4
+    type  = "ssh"
+    user  = "root"
+    agent = true
   }
 
   provisioner "file" {
@@ -307,10 +307,10 @@ resource "null_resource" "cluster_firewall_node" {
   }
 
   connection {
-    host        = self.triggers.k8s_node_ipv4
-    type        = "ssh"
-    user        = "root"
-    agent       = true
+    host  = self.triggers.k8s_node_ipv4
+    type  = "ssh"
+    user  = "root"
+    agent = true
   }
 
   provisioner "file" {
