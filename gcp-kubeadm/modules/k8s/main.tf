@@ -48,8 +48,8 @@ output "windows_module_path" {
 # self.network_interface.0.access_config.0.nat_ip = ipv4 address of self
 resource "google_compute_instance" "master" {
   name         = "master"
-  # machine_type = "c2-standard-4"
-  machine_type = "n2-standard-2"
+  machine_type = "c2-standard-4"
+  # machine_type = "n2-standard-2"
   metadata = {
     block-project-ssh-keys = false
   }
@@ -157,8 +157,8 @@ resource "google_compute_instance" "master" {
 resource "google_compute_instance" "node" {
   count        = var.node_count
   name         = "worker-${count.index + 1}"
-  machine_type = "n2-standard-2"
-  # machine_type = "c2-standard-4"
+  # machine_type = "n2-standard-2"
+  machine_type = "c2-standard-4"
   lifecycle {
     ignore_changes = [attached_disk]
   }
