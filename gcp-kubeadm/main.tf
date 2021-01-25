@@ -9,7 +9,7 @@ terraform {
       version = ">= 2.1"
     }
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = "3.53.0"
     }
   }
@@ -30,7 +30,7 @@ module "k8s" {
 
   admin_ssh_keys = var.admin_ssh_keys
 
-  host_type                 = var.host_type
+  host_type = var.host_type
 }
 
 
@@ -44,14 +44,14 @@ module "mayastor-dependencies" {
     worker.name => worker.public_ip
   }
 
-  nodes = { 
-    for node in module.k8s.cluster_nodes : 
+  nodes = {
+    for node in module.k8s.cluster_nodes :
     node.name => node.public_ip
   }
 
   master = {
     (module.k8s.master_node.name) = (module.k8s.master_node.public_ip)
-  } 
+  }
 
   depends_on = [module.k8s]
 }

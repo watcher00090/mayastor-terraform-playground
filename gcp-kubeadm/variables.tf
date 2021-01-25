@@ -43,7 +43,7 @@ variable "host_type" {
 }
 
 variable "admin_ssh_keys" {
-  type = map(map(string))
+  type        = map(map(string))
   description = "Map of maps for configuring public SSH keys for the project. Keys are key names in GCP, values are maps containing either the key 'key_data' associated with the contents of the public key, or 'key_file' associated with an absolute path to the public key file."
 }
 
