@@ -1,6 +1,7 @@
 locals {
-  k8s_config   = "${path.module}/secrets/admin.conf"
-  kubeadm_join = "${path.module}/secrets/kubeadm_join"
+  k8s_config       = "${path.module}/secrets/admin.conf"
+  kubeadm_join     = "${path.module}/secrets/kubeadm_join"
+  install_packages = concat(var.install_packages, ["open-iscsi"])
 }
 
 provider "kubernetes" {
@@ -43,7 +44,7 @@ resource "hcloud_server" "master" {
   provisioner "file" {
     content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
-      install_packages   = var.install_packages,
+      install_packages   = local.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
     })
@@ -105,7 +106,7 @@ resource "hcloud_server" "node" {
   provisioner "file" {
     content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
-      install_packages   = var.install_packages,
+      install_packages   = local.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
     })
