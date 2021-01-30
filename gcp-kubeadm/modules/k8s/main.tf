@@ -7,6 +7,7 @@ locals {
   list_of_ssh_strings = [for key in keys(var.admin_ssh_keys) : "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
   extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
   ssh_keys_string     = join("\n", local.list_of_ssh_strings)
+  flannel_cidr = "10.244.0.0/16"
 }
 
 # Ubuntu 20 LTS
@@ -65,7 +66,7 @@ resource "google_compute_instance" "master" {
 
 
   network_interface {
-    subnetwork = google_compute_subnetwork.subnetwork_1.name
+    subnetwork = google_compute_subnetwork.main.name
     # network = "default"
     access_config {
 
@@ -120,7 +121,7 @@ resource "google_compute_instance" "master" {
   provisioner "file" {
     content = templatefile("${path.module}/files/master.sh", {
       feature_gates               = var.feature_gates,
-      pod_network_cidr            = var.pod_network_cidr,
+      pod_network_cidr            = local.flannel_cidr,
       master_public_ipv4_address  = self.network_interface.0.access_config.0.nat_ip,
       master_private_ipv4_address = self.network_interface.0.network_ip
     })
@@ -151,7 +152,7 @@ resource "google_compute_instance" "master" {
     }
   }
 
-  depends_on = [null_resource.prepare_line_endings, google_compute_project_metadata.my_ssh_key, google_compute_firewall.firewall_1, google_compute_firewall.allow_internal_traffic]
+  depends_on = [null_resource.prepare_line_endings, google_compute_project_metadata.my_ssh_key, google_compute_firewall.allow_egress, google_compute_firewall.allow_internal_traffic, google_compute_firewall.allow_internal_traffic_pods]
 }
 
 resource "google_compute_instance" "node" {
@@ -174,7 +175,7 @@ resource "google_compute_instance" "node" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.subnetwork_1.name
+    subnetwork = google_compute_subnetwork.main.name
     # network = "default"
     access_config {
 
@@ -331,4 +332,34 @@ resource "null_resource" "cluster_firewall_node" {
   }
 
   depends_on = [null_resource.prepare_line_endings]
+}
+
+resource "null_resource" "flannel" {
+  # well ... FIXME?
+  # I like to have flannel removable/upgradeable via TF, but stuff required to SSH to the instance for destroy is destroyed before flannel :-/
+  depends_on = [google_compute_instance.master, google_compute_subnetwork.main]
+  triggers = {
+    host            = google_compute_instance.master.network_interface.0.access_config.0.nat_ip # public ipv4
+    flannel_version = var.flannel_version
+  }
+  connection {
+    host = self.triggers.host
+    agent = true
+    type = "ssh"
+  }
+
+  // NOTE: admin.conf is copied to ubuntu's home by kubeadm module
+  provisioner "remote-exec" {
+    inline = [
+      "kubectl apply -f \"https://raw.githubusercontent.com/coreos/flannel/v${self.triggers.flannel_version}/Documentation/kube-flannel.yml\""
+    ]
+  }
+
+  # FIXME: deleting flannel's yaml isn't enough to undeploy it completely (e.g. /etc/cni/net.d/*, ...)
+  provisioner "remote-exec" {
+    when = destroy
+    inline = [
+      "kubectl delete -f \"https://raw.githubusercontent.com/coreos/flannel/v${self.triggers.flannel_version}/Documentation/kube-flannel.yml\""
+    ]
+  }
 }

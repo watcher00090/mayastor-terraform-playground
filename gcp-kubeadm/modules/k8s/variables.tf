@@ -15,6 +15,11 @@ variable "kubernetes_version" {
   default = "1.19.0"
 }
 
+variable "gcp_address_cidr_block" {
+  type = string
+  default = "10.0.0.0/16"
+}
+
 
 variable "feature_gates" {
   description = "Add Feature Gates e.g. 'DynamicKubeletConfig=true'"
@@ -28,4 +33,10 @@ variable "pod_network_cidr" {
 
 variable "metrics_server_version" {
   default = "0.3.7"
+}
+
+variable "flannel_version" {
+  type = string
+  description = "Version of flannel CNI to deploy to the cluster."
+  default     = "0.13.0"
 }

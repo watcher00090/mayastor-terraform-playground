@@ -102,11 +102,11 @@ sudo systemctl start local-iptables.service
 # https://coredns.io/plugins/loop/#troubleshooting
 # https://askubuntu.com/questions/907246/how-to-disable-systemd-resolved-in-ubuntu
 
-# sudo cat /etc/resolve.conf
-# sudo rm /etc/resolv.conf
-# sudo grep ^nameserver /run/systemd/resolve/resolv.conf > /etc/resolv.conf (TODO: Ask Arne about what this is doing)
-# sudo systemctl stop systemd-resolved
-# sudo systemctl disable systemd-resolved
+# sudo cat /etc/resolve.conf  (TODO: Ask Arne about what this is doing)
+sudo rm -f -- /etc/resolv.conf
+sudo grep ^nameserver /run/systemd/resolve/resolv.conf > /etc/resolv.conf 
+sudo systemctl stop systemd-resolved
+sudo systemctl disable systemd-resolved
 
 waitforapt
 sudo apt-get -qq update
@@ -182,3 +182,14 @@ sudo mv -v ${server_upload_dir}/10-kubeadm.conf /etc/systemd/system/kubelet.serv
 
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
+
+# added to fix the error "open /run/flannel/subnet.env: no such file or directory" 
+# See https://github.com/kubernetes/kubernetes/issues/70202 for details
+
+#sudo mkdir /run/flannel
+#sudo rm -f -- /run/flannel/subnet.env
+#sudo touch /run/flannel/subnet.env
+#echo FLANNEL_NETWORK=10.244.0.0/16 >> /run/flannel/subnet.env
+#echo FLANNEL_SUBNET=10.244.0.1/24 >> /run/flannel/subnet.env
+#echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env
+#echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env

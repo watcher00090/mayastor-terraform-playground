@@ -1,3 +1,4 @@
+/*
 resource "null_resource" "flannel" {
   triggers = {
     flannel_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\files\\kube-flannel-wireguard.yaml" : "${path.module}/files/kube-flannel-wireguard.yaml", {
@@ -31,3 +32,4 @@ resource "null_resource" "flannel" {
   }
 }
 
+*/
