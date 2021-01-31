@@ -1,11 +1,6 @@
 locals {
   on_windows_host                        = upper(var.host_type) == "WINDOWS" ? true : false
   validate_replica_count_linux_command   = <<-EOF
-    set -e
-    if [ "${var.mayastor_replicas}" -gt "${length(var.node_names)}" ]; then
-      echo "Variable mayastor_replicas cannot be greater than number of cluster nodes"
-      exit 1
-    fi
   EOF 
   validate_replica_count_windows_command = <<-EOF
     if ${var.mayastor_replicas} GTR ${length(var.node_names)} (echo Variable mayastor_replicas cannot be greater than number of cluster nodes & exit 1)
@@ -16,7 +11,7 @@ locals {
 resource "null_resource" "prepare_line_endings" {
   count = local.on_windows_host ? 1 : 0
   provisioner "local-exec" {
-    command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
+    command = "utils\\convert-to-linux-eol.bat"
     environment = {
       UTILS_SCRIPTS_DIR = "utils"
       FILES_DIR         = "${local.windows_module_path}\\files"
@@ -28,7 +23,11 @@ resource "null_resource" "prepare_line_endings" {
 # between mayastor_replicas and number of cluster nodes here
 resource "null_resource" "validate_replica_count" {
   provisioner "local-exec" {
-    command = local.on_windows_host ? local.validate_replica_count_windows_command : local.validate_replica_count_linux_command
+    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\validate_replica_count.bat" : "${path.module}/scripts/validate_replica_count.sh"
+    environment = {
+      MAYASTOR_REPLICAS = var.mayastor_replicas
+      NUM_NODES         = length(var.node_names)
+    }
   }
   depends_on = [null_resource.prepare_line_endings]
 }

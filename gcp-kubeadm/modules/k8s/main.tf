@@ -7,7 +7,7 @@ locals {
   list_of_ssh_strings = [for key in keys(var.admin_ssh_keys) : "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
   extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
   ssh_keys_string     = join("\n", local.list_of_ssh_strings)
-  flannel_cidr = "10.244.0.0/16"
+  flannel_cidr        = "10.244.0.0/16"
 }
 
 # Ubuntu 20 LTS
@@ -33,7 +33,7 @@ resource "null_resource" "prepare_line_endings" {
   }
 }
 
-resource "google_compute_project_metadata" "my_ssh_key" {
+resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
     ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
   }
@@ -152,7 +152,7 @@ resource "google_compute_instance" "master" {
     }
   }
 
-  depends_on = [null_resource.prepare_line_endings, google_compute_project_metadata.my_ssh_key, google_compute_firewall.allow_egress, google_compute_firewall.allow_internal_traffic, google_compute_firewall.allow_internal_traffic_pods]
+  depends_on = [null_resource.prepare_line_endings, google_compute_project_metadata.ssh_keys, google_compute_firewall.allow_egress, google_compute_firewall.allow_internal_traffic, google_compute_firewall.allow_internal_traffic_pods]
 }
 
 resource "google_compute_instance" "node" {
@@ -245,7 +245,7 @@ resource "google_compute_instance" "node" {
     ]
   }
 
-  depends_on = [null_resource.prepare_line_endings, google_compute_instance.master, google_compute_project_metadata.my_ssh_key]
+  depends_on = [null_resource.prepare_line_endings, google_compute_instance.master, google_compute_project_metadata.ssh_keys]
 }
 
 #resource "google_ssh_key" "admin_ssh_keys" {
@@ -343,9 +343,9 @@ resource "null_resource" "flannel" {
     flannel_version = var.flannel_version
   }
   connection {
-    host = self.triggers.host
+    host  = self.triggers.host
     agent = true
-    type = "ssh"
+    type  = "ssh"
   }
 
   // NOTE: admin.conf is copied to ubuntu's home by kubeadm module

@@ -16,7 +16,7 @@ variable "kubernetes_version" {
 }
 
 variable "gcp_address_cidr_block" {
-  type = string
+  type    = string
   default = "10.0.0.0/16"
 }
 
@@ -36,7 +36,7 @@ variable "metrics_server_version" {
 }
 
 variable "flannel_version" {
-  type = string
+  type        = string
   description = "Version of flannel CNI to deploy to the cluster."
   default     = "0.13.0"
 }
