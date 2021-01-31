@@ -23,7 +23,7 @@ resource "null_resource" "prepare_line_endings" {
 # between mayastor_replicas and number of cluster nodes here
 resource "null_resource" "validate_replica_count" {
   provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\validate_replica_count.bat" : "${path.module}/scripts/validate_replica_count.sh"
+    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\validate_replica_count.bat" : "chmod +x ${path.module}/scripts/validate_replica_count.sh && ${path.module}/scripts/validate_replica_count.sh"
     environment = {
       MAYASTOR_REPLICAS = var.mayastor_replicas
       NUM_NODES         = length(var.node_names)

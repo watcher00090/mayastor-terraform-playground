@@ -82,7 +82,7 @@ resource "google_compute_instance" "master" {
 
   # enable root ssh login to instance
   provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
+    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
       HELPER_COMMANDS_FILE_PATH      = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
@@ -142,7 +142,7 @@ resource "google_compute_instance" "master" {
   }
 
   provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\copy-k8s-secrets.bat" : "${path.module}/scripts/copy-k8s-secrets.sh"
+    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\copy-k8s-secrets.bat" : "chmod +x ${path.module}/scripts/copy-k8s-secrets.sh && ${path.module}/scripts/copy-k8s-secrets.sh"
     environment = {
       K8S_CONFIG                = local.k8s_config
       KUBEADM_JOIN              = local.kubeadm_join
@@ -184,7 +184,7 @@ resource "google_compute_instance" "node" {
 
   # enable root ssh login to instance
   provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "${path.module}/scripts/allow-root-ssh-login.sh"
+    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
       HELPER_COMMANDS_FILE_PATH      = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt"
