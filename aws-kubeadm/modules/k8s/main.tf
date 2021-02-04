@@ -2,9 +2,13 @@
 locals {
   tags         = merge(var.tags, { "terraform-kubeadm:cluster" = var.cluster_name, "Name" = var.cluster_name })
   flannel_cidr = "10.244.0.0/16" # hardcoded in flannel, do not change
-  idx_to_worker_type_list = flatten([for item in var.worker_instances_spec : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : lookup(item, "type", "t3.medium")])])
-  idx_to_is_mayastor_worker_list = flatten([for item in var.worker_instances_spec : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : tostring(lookup(item, "mayastor_node_label", "false"))])])
-  idx_to_prefix_list = flatten([for item in var.worker_instances_spec : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : lookup(item, "prefix", lookup(item, "mayastor_node_label", "__missing__") == "__missing__" ? "__generate_random_prefix__" : "mayastor-worker-")])])
+  proto_idx_to_prefix_list = flatten([for item in var.worker_instances_spec : item["prefix"] ])
+  worker_instances_spec_reordered = flatten([for idx,item in var.worker_instances_spec: (index(local.proto_idx_to_prefix_list, item["prefix"]) != idx) ? [] : flatten([for item_prime in var.worker_instances_spec: ( item_prime["prefix"] == item["prefix"] ? [item] : []) ]) ])
+  idx_to_prefix_list = flatten([for item in local.worker_instances_spec_reordered : [for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : item["prefix"] ]])
+  idx_to_worker_type_list = flatten([for item in local.worker_instances_spec_reordered : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : lookup(item, "type", "t3.medium")])])
+  idx_to_is_mayastor_worker_list = flatten([for item in local.worker_instances_spec_reordered : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : tostring(lookup(item, "mayastor_node_label", "false"))])])
+  prefixes_list = toset([for item in local.worker_instances_spec_reordered : item["prefix"]])
+  #prefix_to_count = {for item in local.prefixes_list}
 }
 
 #------------------------------------------------------------------------------#
@@ -209,8 +213,8 @@ resource "aws_instance" "workers" {
     delete_on_termination = true
     encrypted             = false
   }
-  tags        = merge({"mayastor-worker" = local.idx_to_is_mayastor_worker_list[count.index]}, merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index])}", "Name" = "${var.cluster_name}-${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index])}" }))
-  volume_tags = merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index])}", "Name" = "${var.cluster_name}-${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index])}" })
+  tags        = merge({"mayastor-worker" = local.idx_to_is_mayastor_worker_list[count.index]}, merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index]) + 1}", "Name" = "${var.cluster_name}-${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index]) + 1}" }))
+  volume_tags = merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index]) + 1}", "Name" = "${var.cluster_name}-${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index]) + 1}" })
   user_data = <<-EOF
   #!/bin/bash
 
@@ -229,7 +233,7 @@ resource "aws_instance" "workers" {
   kubeadm join ${aws_instance.master.private_ip}:6443 \
     --token ${local.token} \
     --discovery-token-unsafe-skip-ca-verification \
-    --node-name ${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index])}
+    --node-name ${local.idx_to_prefix_list[count.index]}-${count.index - index(local.idx_to_prefix_list, local.idx_to_prefix_list[count.index]) + 1}
 
   systemctl enable docker kubelet
 

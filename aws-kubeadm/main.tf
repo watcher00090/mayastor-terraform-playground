@@ -1,10 +1,23 @@
+locals {
+  worker_instances_spec = [for item in var.worker_instances_spec: ((tostring(lookup(item, "mayastor_node_label", "__missing__")) == "true") ? merge(item,{prefix="mayastor-worker"}) : (lookup(item, "prefix", "__missing__") == "__missing__" ? merge(item,{prefix="${substr(uuid(),0,var.num_chars_for_group_identifier)}"}) : item))]
+  tags         = merge(var.tags, { "terraform-kubeadm:cluster" = var.cluster_name, "Name" = var.cluster_name })
+  flannel_cidr = "10.244.0.0/16" # hardcoded in flannel, do not change
+  proto_idx_to_prefix_list = flatten([for item in local.worker_instances_spec : item["prefix"] ])
+  worker_instances_spec_reordered = flatten([for idx,item in local.worker_instances_spec: (index(local.proto_idx_to_prefix_list, item["prefix"]) != idx) ? [] : flatten([for item_prime in local.worker_instances_spec: ( item_prime["prefix"] == item["prefix"] ? [item] : []) ]) ])
+  idx_to_prefix_list = flatten([for item in local.worker_instances_spec_reordered : [for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : item["prefix"] ]])
+  idx_to_worker_type_list = flatten([for item in local.worker_instances_spec_reordered : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : lookup(item, "type", "t3.medium")])])
+  idx_to_is_mayastor_worker_list = flatten([for item in local.worker_instances_spec_reordered : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : tostring(lookup(item, "mayastor_node_label", "false"))])])
+  prefixes_list = toset([for item in local.worker_instances_spec_reordered : item["prefix"]])
+  #prefix_to_count = {for item in local.prefixes_list}
+}
+
 module "k8s" {
   source = "./modules/k8s"
 
   cluster_name = var.cluster_name
   num_workers  = !var.use_worker_instances_spec ? var.num_workers : sum([for item in var.worker_instances_spec : parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)])
   use_worker_instances_spec = var.use_worker_instances_spec
-  worker_instances_spec = var.worker_instances_spec
+  worker_instances_spec = [for item in var.worker_instances_spec: ((tostring(lookup(item, "mayastor_node_label", "__missing__")) == "true") ? merge(item,{prefix="mayastor-worker"}) : (lookup(item, "prefix", "__missing__") == "__missing__" ? merge(item,{prefix="${substr(uuid(),0,var.num_chars_for_group_identifier)}"}) : item))]
   worker_instances_spec_default_num_workers_per_type = var.worker_instances_spec_default_num_workers_per_type
 
   aws_instance_root_size_gb = var.aws_instance_root_size_gb

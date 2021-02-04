@@ -140,3 +140,8 @@ variable "worker_instances_spec_default_num_workers_per_type" {
   default = 2
   description = "If the worker_instances_spec is used, the default number of worker nodes of each type to create if the count field isn't specified"
 }
+
+variable "num_chars_for_group_identifier" {
+  type = number
+  default = 8
+}
