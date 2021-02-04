@@ -112,7 +112,7 @@ variable "aws_instance_type_worker" {
   description = "EC2 instance type to use for kubernetes nodes. Not all types are supported. See modules/k8s/variables.tf - variable aws_worker_instances on how to add support for more."
   default     = "t3.xlarge"
   validation {
-    condition     = contains(["t3.xlarge", "i3.xlarge"], var.aws_instance_type_worker)
+    condition     = contains(["t3.xlarge", "i3.xlarge", "m5d.metal"], var.aws_instance_type_worker)
     error_message = "Unsupported instance type. To add support check aws_worker_instances variable in modules/k8s/variables.tf."
   }
 }
@@ -121,4 +121,22 @@ variable "docker_insecure_registry" {
   type        = string
   description = "Set trusted docker registry on worker nodes (handy for private registry)"
   default     = ""
+}
+
+variable "use_worker_instances_spec" {
+  type = bool
+  description = "Whether or not to use the worker_instances_spec variable to create the worker nodes."
+  default = false
+}
+
+variable "worker_instances_spec" {
+  type = list(map(string))
+  description = "List of maps describing the machine types of the worker nodes and how many nodes of each type to create. If the list has multiple items with the same prefix, assumes that they are contiguous"
+  default = [{type = "t3.xlarge", count = 2, mayastor_node_label = true}, {type = "m5.4xlarge", count = 1, prefix = "client"}, {type = "h1.2xlarge", count = 2, prefix = "extra"}]
+}
+
+variable "worker_instances_spec_default_num_workers_per_type" {
+  type = number
+  default = 2
+  description = "If the worker_instances_spec is used, the default number of worker nodes of each type to create if the count field isn't specified"
 }

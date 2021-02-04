@@ -119,6 +119,10 @@ variable "aws_worker_instances" {
   default = {
     "t3.xlarge" : "/dev/nvme1n1",
     "i3.xlarge" : "/dev/nvme0n1",
+    "m5d.metal" : "/dev/nvme0n1",
   }
 }
 
+variable "use_worker_instances_spec" {}
+variable "worker_instances_spec" {}
+variable "worker_instances_spec_default_num_workers_per_type" {}
