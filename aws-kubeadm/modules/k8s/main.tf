@@ -2,17 +2,15 @@
 locals {
   tags         = merge(var.tags, { "terraform-kubeadm:cluster" = var.cluster_name, "Name" = var.cluster_name })
   flannel_cidr = "10.244.0.0/16" # hardcoded in flannel, do not change
-  proto_idx_to_prefix_list = flatten([for item in var.worker_instances_spec : item["prefix"] ])
-  worker_instances_spec_reordered = flatten([for idx,item in var.worker_instances_spec: (index(local.proto_idx_to_prefix_list, item["prefix"]) != idx) ? [] : flatten([for item_prime in var.worker_instances_spec: ( item_prime["prefix"] == item["prefix"] ? [item] : []) ]) ])
-  idx_to_prefix_list = flatten([for item in local.worker_instances_spec_reordered : [for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : item["prefix"] ]])
-  idx_to_worker_type_list = flatten([for item in local.worker_instances_spec_reordered : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : lookup(item, "type", "t3.medium")])])
-  idx_to_is_mayastor_worker_list = flatten([for item in local.worker_instances_spec_reordered : ([for idx in range(0, parseint(lookup(item, "count", var.worker_instances_spec_default_num_workers_per_type),10)) : tostring(lookup(item, "mayastor_node_label", "false"))])])
-  prefixes_set = toset([for item in local.worker_instances_spec_reordered : item["prefix"]])
-  prefix_to_count = {for prefix in local.prefixes_set: 
-    prefix => sum([for prefix_prime in local.idx_to_prefix_list: prefix_prime == prefix ? 1 : 0])
-  }
+  proto_idx_to_prefix_list = jsondecode(data.null_data_source.proto_idx_to_prefix_list.outputs.val)
+  worker_instances_spec_reordered = jsondecode(data.null_data_source.worker_instances_spec_reordered.outputs.val)
+  idx_to_prefix_list = jsondecode(data.null_data_source.idx_to_prefix_list.outputs.val)
+  idx_to_worker_type_list = jsondecode(data.null_data_source.idx_to_worker_type_list.outputs.val)
+  idx_to_is_mayastor_worker_list = jsondecode(data.null_data_source.idx_to_is_mayastor_worker_list.outputs.val)
+  prefix_to_count = jsondecode(data.null_data_source.prefix_to_count.outputs.val)
+  has_uuid_prefix = jsondecode(data.null_data_source.has_uuid_prefix.outputs.val)
   # use the prefix (without the count) for the node name when there's only one node with that prefix
-  idx_to_node_name = [for idx in range(0,var.num_workers) : local.prefix_to_count[local.idx_to_prefix_list[idx]] != 1 ? "${local.idx_to_prefix_list[idx]}-${idx - index(local.idx_to_prefix_list, local.idx_to_prefix_list[idx]) + 1}" : "${local.idx_to_prefix_list[idx]}" ]
+  idx_to_node_name = jsondecode(data.null_data_source.idx_to_node_name.outputs.val)
 }
 
 #------------------------------------------------------------------------------#
@@ -217,8 +215,8 @@ resource "aws_instance" "workers" {
     delete_on_termination = true
     encrypted             = false
   }
-  tags        = merge({"mayastor-worker" = local.idx_to_is_mayastor_worker_list[count.index]}, merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_node_name[count.index]}", "Name" = "${var.cluster_name}-${local.idx_to_node_name[count.index]}"}))
-  volume_tags = merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_node_name[count.index]}", "Name" = "${var.cluster_name}-${local.idx_to_node_name[count.index]}}" })
+  tags        = merge({"mayastor-worker" = "${local.idx_to_is_mayastor_worker_list[count.index]}"}, merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_node_name[count.index]}", "Name" = "${var.cluster_name}-${local.idx_to_node_name[count.index]}", "type" = "${local.idx_to_worker_type_list[count.index]}"}))
+  volume_tags = merge(local.tags, { "terraform-kubeadm:node" = "${local.idx_to_node_name[count.index]}", "Name" = "${var.cluster_name}-${local.idx_to_node_name[count.index]}" })
   user_data = <<-EOF
   #!/bin/bash
 

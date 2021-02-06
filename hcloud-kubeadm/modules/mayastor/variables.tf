@@ -4,8 +4,14 @@ variable "server_upload_dir" {}
 
 variable "node_names" {}
 
-variable "mayastor_disk" {}
+#variable "mayastor_disk" {}
 
 variable "mayastor_use_develop_images" {}
 
 variable "mayastor_replicas" {}
+
+variable "num_mayastor_workers" {}
+
+variable "cluster_name" {}
+
+variable "idx_to_mount_point" {}

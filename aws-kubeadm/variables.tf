@@ -131,7 +131,7 @@ variable "use_worker_instances_spec" {
 
 variable "worker_instances_spec" {
   type = list(map(string))
-  description = "List of maps describing the machine types of the worker nodes and how many nodes of each type to create. If the list has multiple items with the same prefix, assumes that they are contiguous"
+  description = "List of maps describing the machine types of the worker nodes and how many nodes of each type to create."
   default = [{type = "t3.xlarge", count = 2, mayastor_node_label = true}, {type = "m5.4xlarge", count = 1, prefix = "client"}, {type = "h1.2xlarge", count = 2, prefix = "extra"}]
 }
 
@@ -144,4 +144,19 @@ variable "worker_instances_spec_default_num_workers_per_type" {
 variable "num_chars_for_group_identifier" {
   type = number
   default = 8
+}
+
+variable "use_old_style_worker_names" {
+  type = bool
+  default = false
+}
+
+variable "aws_worker_instances" {
+  type        = map(string)
+  description = "Map of <instance type>:<disk to use for mayastor pool>. Used to get disk depending on var.aws_worker_instance_type"
+  default = {
+    "t3.xlarge" : "/dev/nvme1n1",
+    "i3.xlarge" : "/dev/nvme0n1",
+    "m5d.metal" : "/dev/nvme0n1",
+  }
 }

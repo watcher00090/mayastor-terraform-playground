@@ -1,6 +1,6 @@
 variable "workers" {
-  type        = map(string)
-  description = "A map of worker_name=>worker_public_ip"
+  type        = list(any)
+  description = "A list of the Mayastor worker nodes"
 }
 
 variable "nr_hugepages" {
@@ -16,3 +16,10 @@ variable "docker_insecure_registry" {
 }
 
 variable "k8s_master_ip" {}
+
+variable "num_mayastor_workers" {}
+variable "mayastor_worker_node_names" {}
+variable "idx_to_mayastor_worker_ip" {}
+
+variable "node_names" {}
+variable "idx_to_mount_point" {}

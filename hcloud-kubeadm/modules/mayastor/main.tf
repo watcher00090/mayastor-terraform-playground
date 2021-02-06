@@ -1,10 +1,28 @@
+/*
+resource "null_resource" "debug" {
+  provisioner "local-exec" {
+    command = <<EOF
+        echo ================================== >> ~/.mayastor_var_dump
+        echo ${var.k8s_master_ip} >> ~/.mayastor_var_dump
+        echo 'var.mayastor_replicas=${var.mayastor_replicas}' >> ~/.mayastor_var_dump
+        echo 'var.num_mayastor_workers}=${var.num_mayastor_workers}' >> ~/.mayastor_var_dump    
+        echo 'var.mayastor_use_develop_images=${var.mayastor_use_develop_images}' >> ~/.mayastor_var_dump
+        echo 'var.node_names=${var.node_names}' >> ~/.mayastor_var_dump
+        echo 'var.idx_to_mount_point=${var.idx_to_mount_point}' >> ~/.mayastor_var_dump
+        echo 'var.cluster_name=${var.cluster_name}' >> ~/.mayastor_var_dump
+        echo 'var.server_upload_dir=${var.server_upload_dir}' >> ~/.mayastor_var_dump
+    EOF
+  }
+}
+*/
+
 # variable validators cannot reference other variables, let's validate relation
 # between mayastor_replicas and number of cluster nodes here
 resource "null_resource" "validate_replica_count" {
   provisioner "local-exec" {
     command = <<-EOF
     set -e
-    if [ "${var.mayastor_replicas}" -gt "${length(var.node_names)}" ]; then
+    if [ "${var.mayastor_replicas}" -gt "${var.num_mayastor_workers}" ]; then
       echo "Variable mayastor_replicas cannot be greater than number of cluster nodes"
       exit 1
     fi
@@ -95,28 +113,30 @@ resource "null_resource" "mayastor_use_develop_images" {
 
 resource "null_resource" "mayastor-pool-local" {
   depends_on = [null_resource.mayastor]
-  for_each   = toset(var.node_names)
+  count = var.num_mayastor_workers
+
   triggers = {
     k8s_master_ip = var.k8s_master_ip
     mayastor_pool_local_yaml = templatefile("${path.module}/templates/mayastor-pool-local.yaml", {
-      mayastor_disk = var.mayastor_disk,
-      node          = each.key,
+      mayastor_disk = "/dev/nvme1n1", #var.idx_to_mount_point[count.index],
+      node          = var.node_names[count.index],
     }),
     server_upload_dir = var.server_upload_dir
+    node_names = jsonencode(var.node_names)
   }
   connection {
     host = self.triggers.k8s_master_ip
   }
   provisioner "file" {
     content     = self.triggers.mayastor_pool_local_yaml
-    destination = "${self.triggers.server_upload_dir}/mayastor_pool_local-${each.key}.yaml"
+    destination = "${self.triggers.server_upload_dir}/mayastor_pool_local-${jsondecode(self.triggers.node_names)[count.index]}.yaml"
   }
   provisioner "remote-exec" {
-    inline = ["kubectl apply -f \"${self.triggers.server_upload_dir}/mayastor_pool_local-${each.key}.yaml\""]
+    inline = ["kubectl apply -f \"${self.triggers.server_upload_dir}/mayastor_pool_local-${jsondecode(self.triggers.node_names)[count.index]}.yaml\""]
   }
   provisioner "remote-exec" {
     when   = destroy
-    inline = ["kubectl delete -f \"${self.triggers.server_upload_dir}/mayastor_pool_local-${each.key}.yaml\""]
+    inline = ["kubectl delete -f \"${self.triggers.server_upload_dir}/mayastor_pool_local-${jsondecode(self.triggers.node_names)[count.index]}.yaml\""]
   }
 }
 

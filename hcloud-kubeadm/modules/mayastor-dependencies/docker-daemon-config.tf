@@ -4,11 +4,11 @@
 # :-) Please let me know if not.
 
 resource "null_resource" "docker_daemon_config_workers" {
-  for_each = var.workers
+  count = var.num_mayastor_workers
 
   connection {
     type = "ssh"
-    host = jsondecode(self.triggers.workers)[each.key]
+    host = jsondecode(self.triggers.mayastor_worker_ips)[count.index]
   }
 
   provisioner "file" {
@@ -35,7 +35,7 @@ resource "null_resource" "docker_daemon_config_workers" {
       "insecure-registries" : ${var.docker_insecure_registry != "" ? jsonencode([var.docker_insecure_registry]) : "[]"}
     }
     EOF
-    workers       = jsonencode(var.workers)
+    mayastor_worker_ips = jsonencode(var.idx_to_mayastor_worker_ip)
   }
 }
 

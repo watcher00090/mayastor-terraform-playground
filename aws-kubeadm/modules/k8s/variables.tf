@@ -49,6 +49,12 @@ variable "num_workers" {
   default     = 2
 }
 
+variable "num_mayastor_workers" {
+  type        = number
+  description = "Number of Mayastor worker nodes."
+  default     = 2
+}
+
 variable "tags" {
   type        = map(string)
   description = "A set of tags to assign to the created AWS resources. These tags will be assigned in addition to the default tags. The default tags include \"terraform-kubeadm:cluster\" which is assigned to all resources and whose value is the cluster name, and \"terraform-kubeadm:node\" which is assigned to the EC2 instances and whose value is the name of the Kubernetes node that this EC2 corresponds to."
@@ -114,15 +120,10 @@ variable "aws_instance_root_size_gb" {}
 
 # NOTE: instance must have >2 CPUs to support mayastor deployment
 variable "aws_worker_instances" {
-  type        = map(string)
-  description = "Map of <instance type>:<disk to use for mayastor pool>. Used to get disk depending on var.aws_worker_instance_type"
-  default = {
-    "t3.xlarge" : "/dev/nvme1n1",
-    "i3.xlarge" : "/dev/nvme0n1",
-    "m5d.metal" : "/dev/nvme0n1",
-  }
 }
 
 variable "use_worker_instances_spec" {}
 variable "worker_instances_spec" {}
 variable "worker_instances_spec_default_num_workers_per_type" {}
+
+variable "use_old_style_worker_names" {}
