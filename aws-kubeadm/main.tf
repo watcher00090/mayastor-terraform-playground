@@ -57,14 +57,17 @@ module "mayastor-dependencies" {
   depends_on = [module.k8s, module.utils]
 }
 
+/*
 module "short_delay" {
   source = "./modules/short_delay"
   depends_on = [module.mayastor-dependencies]
 }
+*/
 
 module "mayastor" {
   count = var.deploy_mayastor ? 1 : 0
-  depends_on = [module.mayastor-dependencies, module.k8s, module.utils, module.short_delay]
+  #depends_on = [module.mayastor-dependencies, module.k8s, module.utils, module.short_delay]
+  depends_on = [module.mayastor-dependencies, module.k8s, module.utils]
 
   k8s_master_ip = module.k8s.cluster_nodes[0].public_ip
   mayastor_replicas = var.mayastor_replicas
