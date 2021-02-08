@@ -182,14 +182,3 @@ sudo mv -v ${server_upload_dir}/10-kubeadm.conf /etc/systemd/system/kubelet.serv
 
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
-
-# added to fix the error "open /run/flannel/subnet.env: no such file or directory" 
-# See https://github.com/kubernetes/kubernetes/issues/70202 for details
-
-#sudo mkdir /run/flannel
-#sudo rm -f -- /run/flannel/subnet.env
-#sudo touch /run/flannel/subnet.env
-#echo FLANNEL_NETWORK=10.244.0.0/16 >> /run/flannel/subnet.env
-#echo FLANNEL_SUBNET=10.244.0.1/24 >> /run/flannel/subnet.env
-#echo FLANNEL_MTU=1450 >> /run/flannel/subnet.env
-#echo FLANNEL_IPMASQ=true >> /run/flannel/subnet.env
