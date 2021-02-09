@@ -56,7 +56,7 @@ variable "mayastor_use_develop_images" {
 variable "server_upload_dir" {
   type        = string
   description = "Terraform provisioner remote-exec sometimes need to put files onto a remote machine. It's uploaded into server_upload_dir."
-  default     = "~/tf-upload"
+  default     = "/root/tf-upload"
 }
 
 variable "install_packages" {

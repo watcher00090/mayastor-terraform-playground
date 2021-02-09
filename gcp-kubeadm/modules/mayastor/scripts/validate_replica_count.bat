@@ -1,1 +1,0 @@
-if %MAYASTOR_REPLICAS% GTR %NUM_NODES% (echo Variable mayastor_replicas cannot be greater than number of ^c^l^u^s^t^e^r nodes & exit 1)

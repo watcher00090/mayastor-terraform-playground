@@ -28,7 +28,7 @@ resource "null_resource" "prepare_line_endings" {
     command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
     environment = {
       UTILS_SCRIPTS_DIR = "utils"
-      FILES_DIR         = "${local.windows_module_path}\\files"
+      FILES_DIR         = "${local.windows_module_path}\\templates"
     }
   }
 }
@@ -85,8 +85,8 @@ resource "google_compute_instance" "master" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH      = local.on_windows_host ? "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/files/helper-commands-root-ssh-login-batch.txt"
-      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
+      HELPER_COMMANDS_FILE_PATH      = local.on_windows_host ? "${local.windows_module_path}\\templates\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/templates/helper-commands-root-ssh-login-batch.txt"
+      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\templates" : "${path.module}/files"
       USER_NAME                      = local.dummy_user_name
     }
   }
@@ -96,7 +96,7 @@ resource "google_compute_instance" "master" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/files/10-kubeadm.conf"
+    source      = "${path.module}/templates/10-kubeadm.conf"
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
   }
 
@@ -105,7 +105,7 @@ resource "google_compute_instance" "master" {
   #}
 
   provisioner "file" {
-    content = templatefile("${path.module}/files/bootstrap.sh", {
+    content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
@@ -119,7 +119,7 @@ resource "google_compute_instance" "master" {
   #}
 
   provisioner "file" {
-    content = templatefile("${path.module}/files/master.sh", {
+    content = templatefile("${path.module}/templates/master.sh", {
       feature_gates               = var.feature_gates,
       pod_network_cidr            = local.flannel_cidr,
       master_public_ipv4_address  = self.network_interface.0.access_config.0.nat_ip,
@@ -148,7 +148,7 @@ resource "google_compute_instance" "master" {
       KUBEADM_JOIN              = local.kubeadm_join
       SSH_HOST                  = self.network_interface.0.access_config.0.nat_ip
       WINDOWS_MODULE_PATH       = local.windows_module_path
-      HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\files\\helper-commands-copy-k8s-secrets-batch.txt"
+      HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\templates\\helper-commands-copy-k8s-secrets-batch.txt"
     }
   }
 
@@ -187,8 +187,8 @@ resource "google_compute_instance" "node" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH      = "${local.windows_module_path}\\files\\helper-commands-root-ssh-login-batch.txt"
-      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\files" : "${path.module}/files"
+      HELPER_COMMANDS_FILE_PATH      = "${local.windows_module_path}\\templates\\helper-commands-root-ssh-login-batch.txt"
+      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\templates" : "${path.module}/files"
       USER_NAME                      = local.dummy_user_name
     }
   }
@@ -205,7 +205,7 @@ resource "google_compute_instance" "node" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/files/10-kubeadm.conf"
+    source      = "${path.module}/templates/10-kubeadm.conf"
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
   }
 
@@ -214,7 +214,7 @@ resource "google_compute_instance" "node" {
   #}
 
   provisioner "file" {
-    content = templatefile("${path.module}/files/bootstrap.sh", {
+    content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
@@ -257,7 +257,7 @@ resource "google_compute_instance" "node" {
 
 resource "null_resource" "cluster_firewall_master" {
   triggers = {
-    deploy_script = templatefile("${path.module}/files/generate-firewall.sh", {
+    deploy_script = templatefile("${path.module}/templates/generate-firewall.sh", {
       k8s_master_ipv4 = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
       k8s_nodes_ipv4  = join(" ", [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip]),
       master          = "true",
@@ -298,7 +298,7 @@ resource "null_resource" "cluster_firewall_master" {
 resource "null_resource" "cluster_firewall_node" {
   count = var.node_count
   triggers = {
-    deploy_script = templatefile("${path.module}/files/generate-firewall.sh", {
+    deploy_script = templatefile("${path.module}/templates/generate-firewall.sh", {
       k8s_master_ipv4 = google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
       k8s_nodes_ipv4  = join(" ", [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip]),
       master          = "false",

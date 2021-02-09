@@ -6,7 +6,7 @@ resource "null_resource" "metrics_server" {
     metrics_server_version = var.metrics_server_version
     server_upload_dir      = var.server_upload_dir
 
-    patch_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\files\\metrics_server_patch.yaml.tmpl" : "${path.module}/files/metrics_server_patch.yaml.tmpl", {
+    patch_yaml = templatefile(local.on_windows_host ? "${local.windows_module_path}\\templates\\metrics_server_patch.yaml.tmpl" : "${path.module}/templates/metrics_server_patch.yaml.tmpl", {
       "master" : google_compute_instance.master.name,
       "master_ip" : google_compute_instance.master.network_interface.0.access_config.0.nat_ip,
       "node_ips" : [for node in google_compute_instance.node : node.network_interface.0.access_config.0.nat_ip],
