@@ -11,9 +11,9 @@ module "k8s" {
 
   admin_ssh_keys = var.admin_ssh_keys
 
-  host_type = var.host_type
+  gcp_instance_type_worker = var.gcp_instance_type_worker
 
-  existing_metadata = jsonencode(google_compute_project_metadata.existing_metadata.metadata)
+  host_type = var.host_type
 }
 
 

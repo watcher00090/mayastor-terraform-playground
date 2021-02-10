@@ -4,11 +4,6 @@ variable "gcp_project" {
   # default = "default"
 }
 
-#variable "gcp_token" {
-#  type        = string
-#  description = "GCP API token." #TODO add description of how to make this token here
-#}
-
 #variable "gcp_region" {
 #  type        = string
 #  description = "Default region to place VM instances into."
@@ -20,7 +15,6 @@ variable "gcp_project" {
 #  description = "Zone within the region to place VM instances into"
 #  default     = "us-central1-c"
 #}
-
 
 variable "node_count" {
   type        = number
@@ -93,4 +87,9 @@ variable "docker_insecure_registry" {
   type        = string
   description = "Set trusted docker registry on worker nodes (handy for private registry)"
   default     = ""
+}
+
+variable "gcp_instance_type_worker" {
+  type = string
+  default = "c2-standard-4"
 }

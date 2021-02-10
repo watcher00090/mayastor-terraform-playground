@@ -1,8 +1,6 @@
 locals {
-  k8s_config          = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\admin.conf" : "${path.module}/secrets/admin.conf"
-  kubeadm_join        = upper(var.host_type) == "WINDOWS" ? "${replace(path.module, "///", "\\")}\\secrets\\kubeadm_join" : "${path.module}/secrets/kubeadm_join"
-  windows_module_path = replace(path.module, "///", "\\")
-  on_windows_host     = upper(var.host_type) == "WINDOWS" ? true : false
+  k8s_config          = "${path.module}/secrets/admin.conf"
+  kubeadm_join        = "${path.module}/secrets/kubeadm_join"
   dummy_user_name     = "ubuntu-admin"
   list_of_ssh_strings = [for key in keys(var.admin_ssh_keys) : "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
   extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
@@ -16,9 +14,6 @@ data "google_compute_image" "my_ubuntu_image" {
   project = "ubuntu-os-cloud"
 }
 
-data "google_client_openid_userinfo" "me" {
-}
-
 resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
     ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
@@ -26,15 +21,10 @@ resource "google_compute_project_metadata" "ssh_keys" {
   project    = var.gcp_project
 }
 
-output "windows_module_path" {
-  value       = local.windows_module_path
-  description = "windows module path"
-}
-
 # self.network_interface.0.access_config.0.nat_ip = ipv4 address of self
 resource "google_compute_instance" "master" {
   name         = "master"
-  machine_type = "c2-standard-4"
+  machine_type = var.gcp_instance_type_master
   # machine_type = "n2-standard-2"
   metadata = {
     block-project-ssh-keys = false
@@ -42,8 +32,8 @@ resource "google_compute_instance" "master" {
   lifecycle {
     ignore_changes = [attached_disk]
   }
+  //sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
   metadata_startup_script = <<EOF
-sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sudo systemctl restart ssh
   EOF
 
@@ -56,7 +46,7 @@ sudo systemctl restart ssh
 
   network_interface {
     subnetwork = google_compute_subnetwork.main.name
-    # network = "default"
+    # could also use 'network = "default"'
     access_config {
 
     }
@@ -70,15 +60,17 @@ sudo systemctl restart ssh
   }
 
   # enable root ssh login to instance
+  /*
   provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
+    command = "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
       INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH      = local.on_windows_host ? "${local.windows_module_path}\\templates\\helper-commands-root-ssh-login-batch.txt" : "${path.module}/templates/helper-commands-root-ssh-login-batch.txt"
-      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\templates" : "${path.module}/files"
+      HELPER_COMMANDS_FILE_PATH      = "${path.module}/templates/helper-commands-root-ssh-login-batch.txt"
+      HELPER_COMMANDS_DIRECTORY_PATH = "${path.module}/files"
       USER_NAME                      = local.dummy_user_name
     }
   }
+  */
 
   provisioner "remote-exec" {
     inline = ["set -xve", "mkdir ${var.server_upload_dir}"]
@@ -88,10 +80,6 @@ sudo systemctl restart ssh
     source      = "${path.module}/templates/10-kubeadm.conf"
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
   }
-
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \" set ff=unix | wq\""]
-  #}
 
   provisioner "file" {
     content = templatefile("${path.module}/templates/bootstrap.sh", {
@@ -103,10 +91,6 @@ sudo systemctl restart ssh
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
 
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
-  #}
-
   provisioner "file" {
     content = templatefile("${path.module}/templates/master.sh", {
       feature_gates               = var.feature_gates,
@@ -116,10 +100,6 @@ sudo systemctl restart ssh
     })
     destination = "${var.server_upload_dir}/master.sh"
   }
-
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/master.sh -c \"set ff=unix | wq\""]
-  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -131,13 +111,11 @@ sudo systemctl restart ssh
   }
 
   provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\copy-k8s-secrets.bat" : "chmod +x ${path.module}/scripts/copy-k8s-secrets.sh && ${path.module}/scripts/copy-k8s-secrets.sh"
+    command = "chmod +x ${path.module}/scripts/copy-k8s-secrets.sh && ${path.module}/scripts/copy-k8s-secrets.sh"
     environment = {
       K8S_CONFIG                = local.k8s_config
       KUBEADM_JOIN              = local.kubeadm_join
       SSH_HOST                  = self.network_interface.0.access_config.0.nat_ip
-      WINDOWS_MODULE_PATH       = local.windows_module_path
-      HELPER_COMMANDS_FILE_PATH = "${local.windows_module_path}\\templates\\helper-commands-copy-k8s-secrets-batch.txt"
     }
   }
 
@@ -148,12 +126,11 @@ resource "google_compute_instance" "node" {
   count = var.node_count
   name  = "worker-${count.index + 1}"
   # machine_type = "n2-standard-2"
-  machine_type = "c2-standard-4"
+  machine_type = var.gcp_instance_type_worker
   lifecycle {
     ignore_changes = [attached_disk]
   }
 
-  // TODO: remove 'PermitRootLogin no' from sshd config file in master node, so that we can ssh into the master as root
   metadata_startup_script = <<EOF
 sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sudo systemctl restart ssh
@@ -178,6 +155,7 @@ sudo systemctl restart ssh
   }
 
   # enable root ssh login to instance
+  /*
   provisioner "local-exec" {
     command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
     environment = {
@@ -187,6 +165,7 @@ sudo systemctl restart ssh
       USER_NAME                      = local.dummy_user_name
     }
   }
+  */
 
   connection {
     host  = self.network_interface.0.access_config.0.nat_ip
@@ -204,10 +183,6 @@ sudo systemctl restart ssh
     destination = "${var.server_upload_dir}/10-kubeadm.conf"
   }
 
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/10-kubeadm.conf -c \"set ff=unix | wq\""]
-  #}
-
   provisioner "file" {
     content = templatefile("${path.module}/templates/bootstrap.sh", {
       docker_version     = var.docker_version,
@@ -218,18 +193,10 @@ sudo systemctl restart ssh
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
 
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/bootstrap.sh -c \"set ff=unix | wq\""]
-  #}
-
   provisioner "file" {
     source      = local.kubeadm_join
     destination = "${var.server_upload_dir}/kubeadm_join"
   }
-
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/kubeadm_join -c \"set ff=unix | wq\""]
-  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -242,13 +209,6 @@ sudo systemctl restart ssh
 
   depends_on = [google_compute_instance.master, google_compute_project_metadata.ssh_keys]
 }
-
-#resource "google_ssh_key" "admin_ssh_keys" {
-#  for_each   = var.admin_ssh_keys
-#  name       = each.key
-#  public_key = lookup(each.value, "key_file", "__missing__") == "__missing__" ? lookup(each.value, "key_data") : file(lookup(each.value, "key_file"))
-#}
-
 
 resource "null_resource" "cluster_firewall_master" {
   triggers = {
@@ -272,10 +232,6 @@ resource "null_resource" "cluster_firewall_master" {
     content     = self.triggers.deploy_script
     destination = "${self.triggers.server_upload_dir}/generate-firewall.sh"
   }
-
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
-  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -311,10 +267,6 @@ resource "null_resource" "cluster_firewall_node" {
     content     = self.triggers.deploy_script
     destination = "${self.triggers.server_upload_dir}/generate-firewall.sh"
   }
-
-  #provisioner "remote-exec" {
-  #  inline = ["set -xve", "vi ${var.server_upload_dir}/generate-firewall.sh -c \" set ff=unix | wq\""]
-  #}
 
   provisioner "remote-exec" {
     inline = [

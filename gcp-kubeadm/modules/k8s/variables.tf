@@ -20,12 +20,10 @@ variable "gcp_address_cidr_block" {
   default = "10.0.0.0/16"
 }
 
-
 variable "feature_gates" {
   description = "Add Feature Gates e.g. 'DynamicKubeletConfig=true'"
   default     = ""
 }
-
 
 variable "pod_network_cidr" {
   default = "10.244.0.0/16"
@@ -40,4 +38,10 @@ variable "flannel_version" {
   description = "Version of flannel CNI to deploy to the cluster."
   default     = "0.13.0"
 }
-variable "existing_metadata" {}
+
+variable "gcp_instance_type_master" {
+  type = string
+  default = "c2-standard-4"
+}
+
+variable "gcp_instance_type_worker" {}

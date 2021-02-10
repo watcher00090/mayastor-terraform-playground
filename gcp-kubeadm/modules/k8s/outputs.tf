@@ -19,5 +19,5 @@ output "cluster_nodes" {
 }
 
 output "k8s_admin_conf" {
-  value = local.on_windows_host ? "${local.windows_module_path}\\secrets\\admin.conf" : "{path.module}/secrets/admin.conf"
+  value = "mayastor-terraform-playground-gcp.conf"
 }
