@@ -12,9 +12,6 @@ locals {
 
 # Ubuntu 20 LTS
 data "google_compute_image" "my_ubuntu_image" {
-  # name    = "debian-9-stretch-v20201216"
-  # project = "debian-cloud"
-
   name    = "ubuntu-2004-focal-v20210119a"
   project = "ubuntu-os-cloud"
 }
@@ -22,23 +19,11 @@ data "google_compute_image" "my_ubuntu_image" {
 data "google_client_openid_userinfo" "me" {
 }
 
-resource "null_resource" "prepare_line_endings" {
-  count = local.on_windows_host ? 1 : 0
-  provisioner "local-exec" {
-    command = local.on_windows_host ? "utils\\convert-to-linux-eol.bat" : "utils/convert-to-linux-eol.bat"
-    environment = {
-      UTILS_SCRIPTS_DIR = "utils"
-      FILES_DIR         = "${local.windows_module_path}\\templates"
-    }
-  }
-}
-
 resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
     ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
   }
   project    = var.gcp_project
-  depends_on = [null_resource.prepare_line_endings]
 }
 
 output "windows_module_path" {
@@ -57,6 +42,10 @@ resource "google_compute_instance" "master" {
   lifecycle {
     ignore_changes = [attached_disk]
   }
+  metadata_startup_script = <<EOF
+sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sudo systemctl restart ssh
+  EOF
 
   boot_disk {
     initialize_params {
@@ -152,7 +141,7 @@ resource "google_compute_instance" "master" {
     }
   }
 
-  depends_on = [null_resource.prepare_line_endings, google_compute_project_metadata.ssh_keys, google_compute_firewall.allow_egress, google_compute_firewall.allow_internal_traffic, google_compute_firewall.allow_internal_traffic_pods]
+  depends_on = [google_compute_project_metadata.ssh_keys, google_compute_firewall.allow_egress, google_compute_firewall.allow_internal_traffic, google_compute_firewall.allow_internal_traffic_pods]
 }
 
 resource "google_compute_instance" "node" {
@@ -163,6 +152,12 @@ resource "google_compute_instance" "node" {
   lifecycle {
     ignore_changes = [attached_disk]
   }
+
+  // TODO: remove 'PermitRootLogin no' from sshd config file in master node, so that we can ssh into the master as root
+  metadata_startup_script = <<EOF
+sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sudo systemctl restart ssh
+  EOF
 
   metadata = {
     block-project-ssh-keys = false
@@ -245,7 +240,7 @@ resource "google_compute_instance" "node" {
     ]
   }
 
-  depends_on = [null_resource.prepare_line_endings, google_compute_instance.master, google_compute_project_metadata.ssh_keys]
+  depends_on = [google_compute_instance.master, google_compute_project_metadata.ssh_keys]
 }
 
 #resource "google_ssh_key" "admin_ssh_keys" {
@@ -289,8 +284,6 @@ resource "null_resource" "cluster_firewall_master" {
       "${self.triggers.server_upload_dir}/generate-firewall.sh",
     ]
   }
-
-  depends_on = [null_resource.prepare_line_endings]
 }
 
 # NOTE: null_resource.cluster_firewall is never destroyed (even if terraform does it it stays in effect on infra)
@@ -330,8 +323,6 @@ resource "null_resource" "cluster_firewall_node" {
       "${self.triggers.server_upload_dir}/generate-firewall.sh",
     ]
   }
-
-  depends_on = [null_resource.prepare_line_endings]
 }
 
 resource "null_resource" "flannel" {
