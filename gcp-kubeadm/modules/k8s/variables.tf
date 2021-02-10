@@ -40,3 +40,4 @@ variable "flannel_version" {
   description = "Version of flannel CNI to deploy to the cluster."
   default     = "0.13.0"
 }
+variable "existing_metadata" {}
