@@ -27,6 +27,7 @@ variable "hugepages_2M_amount" {
   default     = 640
 }
 
+/*
 variable "host_type" {
   type        = string
   description = "The type of host being used locally. Currently accepts only Linux, Windows, and OSX. Case insensitive."
@@ -35,6 +36,7 @@ variable "host_type" {
     error_message = "Error, invalid host type. Only accepts Windows, Linux, and OSX. Please try again. Case insensitive."
   }
 }
+*/
 
 variable "admin_ssh_keys" {
   type        = map(map(string))

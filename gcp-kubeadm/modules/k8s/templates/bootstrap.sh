@@ -12,6 +12,9 @@ waitforapt(){
   done
 }
 
+# add hostname of node to /etc/hosts
+sudo echo "127.0.1.1 ${node_name}" >> /etc/hosts
+
 # set timezone to UTC
 sudo rm /etc/localtime; sudo ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime
 sudo echo 'Etc/UTC' > /etc/timezone
