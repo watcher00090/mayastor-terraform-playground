@@ -6,7 +6,7 @@ variable "workers" {
 variable "nr_hugepages" {
   type        = number
   description = "Number of 2MB hugepages to allocate on the worker node"
-  default     = 640
+  default     = 1024
 }
 
 variable "docker_insecure_registry" {
