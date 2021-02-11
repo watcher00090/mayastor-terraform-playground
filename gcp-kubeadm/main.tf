@@ -12,8 +12,6 @@ module "k8s" {
   admin_ssh_keys = var.admin_ssh_keys
 
   gcp_instance_type_worker = var.gcp_instance_type_worker
-
-  host_type = var.host_type
 }
 
 
@@ -58,7 +56,7 @@ module "mayastor" {
   count                       = var.deploy_mayastor ? 1 : 0
   depends_on                  = [module.mayastor-dependencies]
   k8s_master_ip               = module.k8s.master_ip
-  mayastor_disk               = "/dev/sdb"
+  mayastor_disk               = "/dev/disk/by-id/google-mayastor-disk"
   mayastor_replicas           = var.mayastor_replicas
   mayastor_use_develop_images = var.mayastor_use_develop_images
   node_names                  = [for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) : worker.name]
