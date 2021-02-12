@@ -95,3 +95,11 @@ variable "gcp_instance_type_worker" {
   type = string
   default = "c2-standard-4"
 }
+
+variable "machine_image" {
+  type = list(string)
+  default = [
+    "ubuntu-os-cloud",
+    "ubuntu-2004-focal-v20210119a"
+  ]
+}

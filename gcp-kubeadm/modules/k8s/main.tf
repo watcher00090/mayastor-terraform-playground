@@ -9,9 +9,9 @@ locals {
 }
 
 # Ubuntu 20 LTS
-data "google_compute_image" "my_ubuntu_image" {
-  name    = "ubuntu-2004-focal-v20210119a"
-  project = "ubuntu-os-cloud"
+data "google_compute_image" "machine_image" {
+  project = var.machine_image[0]
+  name    = var.machine_image[1]
 }
 
 resource "google_compute_project_metadata" "ssh_keys" {
@@ -39,7 +39,7 @@ sudo systemctl restart ssh
 
   boot_disk {
     initialize_params {
-      image = data.google_compute_image.my_ubuntu_image.self_link
+      image = data.google_compute_image.machine_image.self_link
     }
   }
 
@@ -143,7 +143,7 @@ sudo systemctl restart ssh
 
   boot_disk {
     initialize_params {
-      image = data.google_compute_image.my_ubuntu_image.self_link
+      image = data.google_compute_image.machine_image.self_link
     }
   }
 
