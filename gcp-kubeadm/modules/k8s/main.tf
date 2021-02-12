@@ -190,7 +190,7 @@ sudo systemctl restart ssh
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
-      node_name = "worker-${count.index}"
+      node_name = "worker-${count.index+1}"
     })
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
