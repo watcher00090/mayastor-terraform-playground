@@ -112,7 +112,7 @@ variable "aws_instance_type_worker" {
   description = "EC2 instance type to use for kubernetes nodes. Not all types are supported. See modules/k8s/variables.tf - variable aws_worker_instances on how to add support for more."
   default     = "t3.xlarge"
   validation {
-    condition     = contains(["t3.xlarge", "i3.xlarge", "m5d.metal"], var.aws_instance_type_worker)
+    condition     = contains(["t3.xlarge", "i3.xlarge", "m5d.metal", "t3.2xlarge"], var.aws_instance_type_worker)
     error_message = "Unsupported instance type. To add support check aws_worker_instances variable in modules/k8s/variables.tf."
   }
 }
@@ -158,5 +158,6 @@ variable "aws_worker_instances" {
     "t3.xlarge" : "/dev/nvme1n1",
     "i3.xlarge" : "/dev/nvme0n1",
     "m5d.metal" : "/dev/nvme0n1",
+    "t3.2xlarge" : "/dev/nvme1n1"
   }
 }
