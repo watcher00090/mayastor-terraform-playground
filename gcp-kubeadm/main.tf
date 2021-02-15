@@ -11,6 +11,7 @@ module "k8s" {
 
   admin_ssh_keys = var.admin_ssh_keys
 
+  gcp_instance_type_master = var.gcp_instance_type_master
   gcp_instance_type_worker = var.gcp_instance_type_worker
 
   machine_image = var.machine_image

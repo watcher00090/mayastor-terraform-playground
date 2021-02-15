@@ -112,7 +112,7 @@ sudo systemctl restart ssh
   }
 
   provisioner "local-exec" {
-    command = "chmod +x ${path.module}/scripts/copy-k8s-secrets.sh && ${path.module}/scripts/copy-k8s-secrets.sh"
+    command = "chmod +x ${path.module}/templates/copy-k8s-secrets.sh && ${path.module}/templates/copy-k8s-secrets.sh"
     environment = {
       K8S_CONFIG                = local.k8s_config
       KUBEADM_JOIN              = local.kubeadm_join
@@ -121,6 +121,27 @@ sudo systemctl restart ssh
   }
 
   depends_on = [google_compute_project_metadata.ssh_keys, google_compute_firewall.allow_egress, google_compute_firewall.allow_internal_traffic, google_compute_firewall.allow_internal_traffic_pods]
+}
+
+#------------------------------------------------------------------------------#
+# Download kubeconfig file from master node to local machine
+#------------------------------------------------------------------------------#
+
+locals {
+  kubeconfig_file = var.kubeconfig_file != null ? abspath(pathexpand(var.kubeconfig_file)) : "${abspath(pathexpand(var.kubeconfig_dir))}/${var.cluster_name}.conf"
+}
+
+resource "null_resource" "download_kubeconfig_file" {
+  provisioner "local-exec" {
+    command = <<-EOF
+    set -e
+    scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:/home/ubuntu/admin.conf ${local.kubeconfig_file} >/dev/null
+    EOF
+  }
+//  triggers = {
+//    master_ = null_resource.wait_for_bootstrap_to_finish.id
+//  }
+  depends_on = [google_compute_instance.master]
 }
 
 resource "google_compute_instance" "node" {
@@ -154,19 +175,6 @@ sudo systemctl restart ssh
 
     }
   }
-
-  # enable root ssh login to instance
-  /*
-  provisioner "local-exec" {
-    command = local.on_windows_host ? "${local.windows_module_path}\\scripts\\allow-root-ssh-login.bat" : "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
-    environment = {
-      INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH      = "${local.windows_module_path}\\templates\\helper-commands-root-ssh-login-batch.txt"
-      HELPER_COMMANDS_DIRECTORY_PATH = local.on_windows_host ? "${local.windows_module_path}\\templates" : "${path.module}/files"
-      USER_NAME                      = local.dummy_user_name
-    }
-  }
-  */
 
   connection {
     host  = self.network_interface.0.access_config.0.nat_ip

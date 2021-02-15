@@ -38,11 +38,23 @@ variable "flannel_version" {
   default     = "0.13.0"
 }
 
-variable "gcp_instance_type_master" {
-  type = string
-  default = "c2-standard-4"
-}
+variable "gcp_instance_type_master" {}
 
 variable "gcp_instance_type_worker" {}
 
 variable "machine_image" {}
+
+variable "kubeconfig_file" {
+  type = string
+  default = "mayastor-terraform-gcp-admin.conf"
+}
+
+variable "cluster_name" {
+  type = string
+  default = "gcp-cluster-1"
+}
+
+variable "kubeconfig_dir" {
+  type = string
+  default = "."
+}
