@@ -67,7 +67,7 @@ variable "deploy_mayastor" {
 variable "ebs_volume_size" {
   type        = number
   description = "Additional EBS volume size to attach to EC2 instance on workers in gigabytes."
-  default     = 5
+  default     = 1000
 }
 
 variable "mayastor_use_develop_images" {
@@ -102,7 +102,7 @@ variable "mayastor_replicas" {
 
 variable "aws_instance_root_size_gb" {
   type        = number
-  default     = 8
+  default     = 1000
   description = "Root block device size for AWS instances in GiB. Clean install (currently) uses a little over 4. Not recommended to use less than default."
 }
 
@@ -158,6 +158,7 @@ variable "aws_worker_instances" {
     "t3.xlarge" : "/dev/nvme1n1",
     "i3.xlarge" : "/dev/nvme0n1",
     "m5d.metal" : "/dev/nvme0n1",
-    "t3.2xlarge" : "/dev/nvme1n1"
+    "t3.2xlarge" : "/dev/nvme1n1",
+    "i3.2xlarge" : "/dev/nvme0n1"
   }
 }

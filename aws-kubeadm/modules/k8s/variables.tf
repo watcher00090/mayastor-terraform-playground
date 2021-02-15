@@ -113,6 +113,7 @@ variable "install_packages" {
     "strace",
     "sysstat",
     "tcpdump",
+    "nfs-common",
   ]
 }
 

@@ -58,7 +58,8 @@ resource "null_resource" "mayastor" {
   provisioner "remote-exec" {
     inline = [
       "set -exv",
-      "kubectl create -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/namespace.yaml",
+      "kubectl create ns mayastor",
+      #"kubectl create -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/namespace.yaml",
       "kubectl create -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/moac-rbac.yaml",
       "kubectl apply -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/csi/moac/crds/mayastorpool.yaml",
       "kubectl apply -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/nats-deployment.yaml",
