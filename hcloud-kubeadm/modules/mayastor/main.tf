@@ -28,8 +28,17 @@ resource "null_resource" "server_upload_dir" {
   }
 }
 
+resource "kubernetes_namespace" "mayastor" {
+  metadata {
+    name = "mayastor"
+  }
+}
+
+
 // FIXME it would be nice to have yamls in HCL; but rather to have them in mayadata repo as snippets or TF module
+// FIXME use helm when chart is released
 resource "null_resource" "mayastor" {
+  depends_on = [kubernetes_namespace.mayastor]
   triggers = {
     k8s_master_ip      = var.k8s_master_ip
     mayastor_image_tag = var.mayastor_use_develop_images ? "develop" : "master"
@@ -40,7 +49,6 @@ resource "null_resource" "mayastor" {
   provisioner "remote-exec" {
     inline = [
       "set -exv",
-      "kubectl create -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/namespace.yaml",
       "kubectl create -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/moac-rbac.yaml",
       "kubectl apply -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/csi/moac/crds/mayastorpool.yaml",
       "kubectl apply -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/nats-deployment.yaml",
@@ -60,7 +68,6 @@ resource "null_resource" "mayastor" {
       "kubectl delete -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/nats-deployment.yaml",
       "kubectl delete -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/csi/moac/crds/mayastorpool.yaml",
       "kubectl delete -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/moac-rbac.yaml",
-      "kubectl delete -f https://raw.githubusercontent.com/openebs/Mayastor/${self.triggers.mayastor_image_tag}/deploy/namespace.yaml",
     ]
   }
 }
