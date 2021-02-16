@@ -3,7 +3,7 @@ locals {
   kubeadm_join        = "${path.module}/secrets/kubeadm_join"
   dummy_user_name     = "ubuntu-admin"
   list_of_ssh_strings = [for key in keys(var.admin_ssh_keys) : "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
-  extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
+#  extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
   ssh_keys_string     = join("\n", local.list_of_ssh_strings)
   flannel_cidr        = "10.244.0.0/16"
 }
@@ -16,7 +16,8 @@ data "google_compute_image" "machine_image" {
 
 resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
-    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
+#    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
+    ssh-keys = local.ssh_keys_string
   }
   project    = var.gcp_project
 }
@@ -32,8 +33,10 @@ resource "google_compute_instance" "master" {
   lifecycle {
     ignore_changes = [attached_disk]
   }
-  //sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+  
+  # allow root ssh login
   metadata_startup_script = <<EOF
+sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sudo systemctl restart ssh
   EOF
 
@@ -46,7 +49,6 @@ sudo systemctl restart ssh
 
   network_interface {
     subnetwork = google_compute_subnetwork.main.name
-    # could also use 'network = "default"'
     access_config {
 
     }
@@ -58,19 +60,6 @@ sudo systemctl restart ssh
     user  = "root"
     agent = true
   }
-
-  # enable root ssh login to instance
-  /*
-  provisioner "local-exec" {
-    command = "chmod +x ${path.module}/scripts/allow-root-ssh-login.sh && ${path.module}/scripts/allow-root-ssh-login.sh"
-    environment = {
-      INSTANCE_IPV4_ADDRESS          = self.network_interface.0.access_config.0.nat_ip
-      HELPER_COMMANDS_FILE_PATH      = "${path.module}/templates/helper-commands-root-ssh-login-batch.txt"
-      HELPER_COMMANDS_DIRECTORY_PATH = "${path.module}/files"
-      USER_NAME                      = local.dummy_user_name
-    }
-  }
-  */
 
   provisioner "remote-exec" {
     inline = ["set -xve", "mkdir ${var.server_upload_dir}"]
@@ -135,7 +124,7 @@ resource "null_resource" "download_kubeconfig_file" {
   provisioner "local-exec" {
     command = <<-EOF
     set -e
-    scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:/home/ubuntu/admin.conf ${local.kubeconfig_file} >/dev/null
+    scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:/home/ubuntu/admin.conf ${local.kubeconfig_file} >/dev/null
     EOF
   }
 //  triggers = {
@@ -153,6 +142,7 @@ resource "google_compute_instance" "node" {
     ignore_changes = [attached_disk]
   }
 
+  # allow root ssh login
   metadata_startup_script = <<EOF
 sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
 sudo systemctl restart ssh
@@ -170,7 +160,6 @@ sudo systemctl restart ssh
 
   network_interface {
     subnetwork = google_compute_subnetwork.main.name
-    # network = "default"
     access_config {
 
     }

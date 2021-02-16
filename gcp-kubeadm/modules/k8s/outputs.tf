@@ -19,5 +19,5 @@ output "cluster_nodes" {
 }
 
 output "k8s_admin_conf" {
-  value = "mayastor-terraform-playground-gcp.conf"
+  value = "admin.conf"
 }

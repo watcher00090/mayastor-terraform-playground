@@ -46,7 +46,7 @@ variable "machine_image" {}
 
 variable "kubeconfig_file" {
   type = string
-  default = "mayastor-terraform-gcp-admin.conf"
+  default = "admin.conf"
 }
 
 variable "cluster_name" {
