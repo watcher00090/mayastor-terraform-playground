@@ -23,7 +23,7 @@ module "mayastor-dependencies" {
 
   docker_insecure_registry = var.docker_insecure_registry
 
-  k8s_master_ip = module.k8s.master_node.public_ip
+  k8s_master_ip = module.k8s.cluster_nodes[0].public_ip
 
   workers = {
     for worker in slice(module.k8s.cluster_nodes, 1, length(module.k8s.cluster_nodes)) :
@@ -38,7 +38,7 @@ module "mayastor" {
 
   count                       = var.deploy_mayastor ? 1 : 0
   depends_on                  = [module.mayastor-dependencies]
-  k8s_master_ip               = module.k8s.master_ip
+  k8s_master_ip               = module.k8s.cluster_nodes[0].public_ip
   mayastor_disk               = "/dev/disk/by-id/google-mayastor-disk"
   mayastor_replicas           = var.mayastor_replicas
   mayastor_use_develop_images = var.mayastor_use_develop_images
