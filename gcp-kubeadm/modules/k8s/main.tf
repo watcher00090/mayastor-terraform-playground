@@ -1,9 +1,7 @@
 locals {
   k8s_config          = "${path.module}/secrets/admin.conf"
   kubeadm_join        = "${path.module}/secrets/kubeadm_join"
-  dummy_user_name     = "ubuntu-admin"
   list_of_ssh_strings = [for key in keys(var.admin_ssh_keys) : "${key}:${lookup(var.admin_ssh_keys[key], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[key], "key_data") : file(lookup(var.admin_ssh_keys[key], "key_file"))}"]
-#  extra_ssh_string    = "${local.dummy_user_name}:${lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file", "__missing__") == "__missing__" ? lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_data") : file(lookup(var.admin_ssh_keys[keys(var.admin_ssh_keys)[0]], "key_file"))}"
   ssh_keys_string     = join("\n", local.list_of_ssh_strings)
   flannel_cidr        = "10.244.0.0/16"
 }
@@ -16,10 +14,10 @@ data "google_compute_image" "machine_image" {
 
 resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
-#    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
+    #    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
     ssh-keys = local.ssh_keys_string
   }
-  project    = var.gcp_project_id
+  project = var.gcp_project_id
 }
 
 # self.network_interface.0.access_config.0.nat_ip = ipv4 address of self
@@ -33,7 +31,7 @@ resource "google_compute_instance" "master" {
   lifecycle {
     ignore_changes = [attached_disk]
   }
-  
+
   # allow root ssh login
   metadata_startup_script = <<EOF
 sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
@@ -76,7 +74,7 @@ sudo systemctl restart ssh
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
-      node_name = "master"
+      node_name          = "master"
     })
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
@@ -103,9 +101,9 @@ sudo systemctl restart ssh
   provisioner "local-exec" {
     command = "chmod +x ${path.module}/templates/copy-k8s-secrets.sh && ${path.module}/templates/copy-k8s-secrets.sh"
     environment = {
-      K8S_CONFIG                = local.k8s_config
-      KUBEADM_JOIN              = local.kubeadm_join
-      SSH_HOST                  = self.network_interface.0.access_config.0.nat_ip
+      K8S_CONFIG   = local.k8s_config
+      KUBEADM_JOIN = local.kubeadm_join
+      SSH_HOST     = self.network_interface.0.access_config.0.nat_ip
     }
   }
 
@@ -127,9 +125,9 @@ resource "null_resource" "download_kubeconfig_file" {
     scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:/home/ubuntu/admin.conf ${local.kubeconfig_file} >/dev/null
     EOF
   }
-//  triggers = {
-//    master_ = null_resource.wait_for_bootstrap_to_finish.id
-//  }
+  //  triggers = {
+  //    master_ = null_resource.wait_for_bootstrap_to_finish.id
+  //  }
   depends_on = [google_compute_instance.master]
 }
 
@@ -187,7 +185,7 @@ sudo systemctl restart ssh
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
-      node_name = "worker-${count.index+1}"
+      node_name          = "worker-${count.index + 1}"
     })
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }

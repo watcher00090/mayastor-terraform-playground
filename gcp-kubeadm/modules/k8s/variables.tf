@@ -45,16 +45,16 @@ variable "gcp_instance_type_worker" {}
 variable "machine_image" {}
 
 variable "kubeconfig_file" {
-  type = string
+  type    = string
   default = "admin.conf"
 }
 
 variable "cluster_name" {
-  type = string
+  type    = string
   default = "gcp-cluster-1"
 }
 
 variable "kubeconfig_dir" {
-  type = string
+  type    = string
   default = "."
 }

@@ -1,7 +1,7 @@
 variable "gcp_project_id" {
   type        = string
   description = "The GCP project that all of your resources will be created in."
-  default = "default"
+  default     = "default"
 }
 
 #variable "gcp_region" {
@@ -30,7 +30,7 @@ variable "hugepages_2M_amount" {
 variable "admin_ssh_keys" {
   type        = map(map(string))
   description = "Map of maps for configuring public SSH keys for the project. Keys are key names in GCP, values are maps containing either the key 'key_data' associated with the contents of the public key, or 'key_file' associated with an absolute path to the public key file."
-  default = {root = {key_file = "~/.ssh/id_rsa.pub"}}
+  default     = { root = { key_file = "~/.ssh/id_rsa.pub" } }
 }
 
 variable "mayastor_use_develop_images" {
@@ -82,12 +82,12 @@ variable "docker_insecure_registry" {
 }
 
 variable "gcp_instance_type_worker" {
-  type = string
+  type    = string
   default = "c2-standard-4"
 }
 
 variable "gcp_instance_type_master" {
-  type = string
+  type    = string
   default = "c2-standard-4"
 }
 

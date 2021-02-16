@@ -5,8 +5,8 @@ resource "google_compute_disk" "mayastor" {
 }
 
 resource "google_compute_attached_disk" "disk_attacher" {
-  count    = length(google_compute_instance.node)
-  instance = google_compute_instance.node[count.index].id
-  disk     = google_compute_disk.mayastor[count.index].id
+  count       = length(google_compute_instance.node)
+  instance    = google_compute_instance.node[count.index].id
+  disk        = google_compute_disk.mayastor[count.index].id
   device_name = "mayastor-disk"
 }
