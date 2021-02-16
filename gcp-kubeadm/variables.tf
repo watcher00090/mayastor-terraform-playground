@@ -1,7 +1,7 @@
-variable "gcp_project" {
+variable "gcp_project_id" {
   type        = string
   description = "The GCP project that all of your resources will be created in."
-  # default = "default"
+  default = "default"
 }
 
 #variable "gcp_region" {
@@ -19,7 +19,7 @@ variable "gcp_project" {
 variable "node_count" {
   type        = number
   description = "Number of kubernetes worker nodes. Mayastor is deployed in a way that it creates replica on each node."
-  default     = 4
+  default     = 2
 }
 
 variable "hugepages_2M_amount" {
@@ -27,20 +27,10 @@ variable "hugepages_2M_amount" {
   default     = 640
 }
 
-/*
-variable "host_type" {
-  type        = string
-  description = "The type of host being used locally. Currently accepts only Linux, Windows, and OSX. Case insensitive."
-  validation {
-    condition     = contains(["WINDOWS", "LINUX", "OSX"], upper(var.host_type))
-    error_message = "Error, invalid host type. Only accepts Windows, Linux, and OSX. Please try again. Case insensitive."
-  }
-}
-*/
-
 variable "admin_ssh_keys" {
   type        = map(map(string))
   description = "Map of maps for configuring public SSH keys for the project. Keys are key names in GCP, values are maps containing either the key 'key_data' associated with the contents of the public key, or 'key_file' associated with an absolute path to the public key file."
+  default = {root = {key_file = "~/.ssh/id_rsa.pub"}}
 }
 
 variable "mayastor_use_develop_images" {

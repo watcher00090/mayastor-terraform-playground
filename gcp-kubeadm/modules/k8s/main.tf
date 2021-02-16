@@ -19,7 +19,7 @@ resource "google_compute_project_metadata" "ssh_keys" {
 #    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
     ssh-keys = local.ssh_keys_string
   }
-  project    = var.gcp_project
+  project    = var.gcp_project_id
 }
 
 # self.network_interface.0.access_config.0.nat_ip = ipv4 address of self

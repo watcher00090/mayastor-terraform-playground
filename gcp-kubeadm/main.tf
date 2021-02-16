@@ -7,7 +7,7 @@ module "k8s" {
   install_packages    = var.install_packages
   hugepages_2M_amount = var.hugepages_2M_amount
 
-  gcp_project = var.gcp_project
+  gcp_project_id = var.gcp_project_id
 
   admin_ssh_keys = var.admin_ssh_keys
 
