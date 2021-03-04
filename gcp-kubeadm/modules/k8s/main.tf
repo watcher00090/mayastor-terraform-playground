@@ -14,7 +14,6 @@ data "google_compute_image" "machine_image" {
 
 resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
-    #    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
     ssh-keys = local.ssh_keys_string
   }
   project = var.gcp_project_id
@@ -43,7 +42,6 @@ sudo systemctl restart ssh
       image = data.google_compute_image.machine_image.self_link
     }
   }
-
 
   network_interface {
     subnetwork = google_compute_subnetwork.main.name

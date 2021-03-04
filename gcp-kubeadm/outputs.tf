@@ -15,7 +15,7 @@
 #}
 
 output "kubeconfig" {
-  value       = module.k8s.kubeconfig
+  value       = module.k8s.k8s_admin_conf
   description = "Location of the kubeconfig file for the created cluster on the local machine."
 }
 

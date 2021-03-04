@@ -1,0 +1,50 @@
+Log file created at: 2021/03/02 12:10:01
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 12:10:01.181264   16891 init.go:79] init command started
+Log file created at: 2021/03/02 12:10:08
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 12:10:08.822691   16903 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 12:11:46
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 12:11:46.916245   17057 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 12:41:13
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 12:41:13.079245   19906 init.go:79] init command started
+Log file created at: 2021/03/02 12:41:25
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 12:41:25.877129   19927 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 12:41:29
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 12:41:29.470216   19933 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 14:47:02
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 14:47:02.432642   27715 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 15:00:48
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 15:00:48.103738   28854 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 15:48:24
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 15:48:24.118281   32698 proxy.go:68] proxy command started
+Log file created at: 2021/03/02 16:46:53
+Running on machine: Jamess-Air
+Binary: Built with gc go1.16 for darwin/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0302 16:46:53.129076   37255 proxy.go:68] proxy command started

@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: "2021-03-02T23:04:39Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    v1.min.io/log-pg: test-tenant-2-log
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          .: {}
+          f:v1.min.io/log-pg: {}
+        f:ownerReferences:
+          .: {}
+          k:{"uid":"097f8605-a05f-4124-a2b7-ce5e3a76ce93"}:
+            .: {}
+            f:apiVersion: {}
+            f:blockOwnerDeletion: {}
+            f:controller: {}
+            f:kind: {}
+            f:name: {}
+            f:uid: {}
+      f:spec:
+        f:accessModes: {}
+        f:resources:
+          f:requests:
+            .: {}
+            f:storage: {}
+        f:volumeMode: {}
+      f:status:
+        f:phase: {}
+    manager: kube-controller-manager
+    operation: Update
+    time: "2021-03-02T23:04:39Z"
+  name: test-tenant-2-log-test-tenant-2-log-0
+  namespace: test-tenant-2
+  ownerReferences:
+  - apiVersion: minio.min.io/v2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Tenant
+    name: test-tenant-2
+    uid: 097f8605-a05f-4124-a2b7-ce5e3a76ce93
+  resourceVersion: "27578"
+  selfLink: /api/v1/namespaces/test-tenant-2/persistentvolumeclaims/test-tenant-2-log-test-tenant-2-log-0
+  uid: 44628512-f9cf-4646-9971-1f098ea82fb5
+spec:
+  storageClassName: openebs-hostpath
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeMode: Filesystem
+status:
+  phase: Pending

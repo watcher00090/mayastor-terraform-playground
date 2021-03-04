@@ -1,7 +1,7 @@
-output "kubeconfig" {
-  value       = local.kubeconfig_file
-  description = "Location of the kubeconfig file for the created cluster on the local machine."
-}
+#output "kubeconfig" {
+#  value       = local.kubeconfig_file
+#  description = "Location of the kubeconfig file for the created cluster on the local machine."
+#}
 
 output "cluster_nodes" {
   value = [
@@ -11,4 +11,18 @@ output "cluster_nodes" {
       private_ip = n.network_interface.0.network_ip,
     }
   ]
+}
+
+output "k8s_admin_conf" {
+  value = local.kubeconfig_file
+  description = "Location of the kubeconfig file for the created cluster on the local machine."
+}
+
+#output "kubeconfig" {
+#  value = local.kubeconfig_file
+#  description = "Location of the kubeconfig file for the created cluster on the local machine."
+#}
+
+output "master_ip" {
+  value = google_compute_instance.master.network_interface.0.access_config.0.nat_ip
 }
