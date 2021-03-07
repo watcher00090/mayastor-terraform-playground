@@ -31,7 +31,7 @@ resource "google_compute_instance" "master" {
   }
 
   # allow root ssh login
-  metadata_startup_script =  "sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | tee -a /etc/ssh/sshd_config"
+  metadata_startup_script = "sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | tee -a /etc/ssh/sshd_config"
 
   boot_disk {
     initialize_params {
@@ -125,15 +125,15 @@ resource "null_resource" "download_kubeconfig_file" {
 }
 
 resource "google_compute_instance" "node" {
-  count = var.node_count
-  name  = "worker-${count.index + 1}"
+  count        = var.node_count
+  name         = "worker-${count.index + 1}"
   machine_type = var.gcp_instance_type_worker
   lifecycle {
     ignore_changes = [attached_disk]
   }
 
   # allow root ssh login
-  metadata_startup_script =  "sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | tee -a /etc/ssh/sshd_config"
+  metadata_startup_script = "sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | tee -a /etc/ssh/sshd_config"
 
   metadata = {
     block-project-ssh-keys = false

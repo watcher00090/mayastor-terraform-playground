@@ -83,7 +83,7 @@ variable "machine_image_data" {
   type = map(string)
   default = {
     project = "ubuntu-os-cloud",
-    name = "ubuntu-2004-focal-v20210119a",
+    name    = "ubuntu-2004-focal-v20210119a",
   }
 }
 

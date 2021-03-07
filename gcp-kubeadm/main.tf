@@ -14,7 +14,7 @@ module "k8s" {
   gcp_instance_type_master = var.gcp_instance_type_master
   gcp_instance_type_worker = var.gcp_instance_type_worker
 
-  docker_version = var.docker_version
+  docker_version     = var.docker_version
   kubernetes_version = var.kubernetes_version
 
   machine_image_data = var.machine_image_data
