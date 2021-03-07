@@ -6,12 +6,13 @@ variable "gcp_project_id" {}
 variable "admin_ssh_keys" {}
 
 variable "docker_version" {
-  type    = string
-  default = "20.10.2"
+  type        = string
+  description = "Docker version to install."
 }
+
 variable "kubernetes_version" {
-  type    = string
-  default = "1.19.0"
+  type        = string
+  description = "Kubernetes version to install."
 }
 
 variable "gcp_address_cidr_block" {

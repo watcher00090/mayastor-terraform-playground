@@ -105,7 +105,7 @@ sudo systemctl start local-iptables.service
 # https://coredns.io/plugins/loop/#troubleshooting
 # https://askubuntu.com/questions/907246/how-to-disable-systemd-resolved-in-ubuntu
 
-# sudo cat /etc/resolve.conf  (TODO: Ask Arne about what this is doing)
+# sudo cat /etc/resolve.conf 
 sudo rm -f -- /etc/resolv.conf
 sudo grep ^nameserver /run/systemd/resolve/resolv.conf > /etc/resolv.conf 
 sudo systemctl stop systemd-resolved
@@ -117,6 +117,15 @@ sudo apt-get -qq install -y vim
 sudo echo 'set mouse=' > /root/.vimrc
 sudo echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
 sudo systemctl restart sshd
+
+# set up multiple ssh public keys for both ubuntu and root - allowing ssh to root account which is disabled in authorized_keys by AWS by default
+# sudo mkdir -p "/home/ubuntu/.ssh" /root/.ssh/
+# sudo rm "/home/ubuntu/.ssh/authorized_keys" /root/.ssh/authorized_keys || true
+
+%{for ssh_public_key in ssh_public_keys~}
+echo '${lookup(ssh_public_key, "key_file", "__missing__") == "__missing__" ? trimspace(lookup(ssh_public_key, "key_data")) : trimspace(file(lookup(ssh_public_key, "key_file")))}' >> /home/ubuntu/.ssh/authorized_keys
+echo '${lookup(ssh_public_key, "key_file", "__missing__") == "__missing__" ? trimspace(lookup(ssh_public_key, "key_data")) : trimspace(file(lookup(ssh_public_key, "key_file")))}' | sudo tee -a /root/.ssh/authorized_keys
+%{endfor~}
 
 sudo apt-get -qy install \
 %{for install_package in install_packages~}

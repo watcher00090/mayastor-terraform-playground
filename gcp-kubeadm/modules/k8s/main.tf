@@ -14,7 +14,6 @@ data "google_compute_image" "machine_image" {
 
 resource "google_compute_project_metadata" "ssh_keys" {
   metadata = {
-    #    ssh-keys = join("\n", [local.ssh_keys_string, local.extra_ssh_string])
     ssh-keys = local.ssh_keys_string
   }
   project = var.gcp_project_id
@@ -24,7 +23,6 @@ resource "google_compute_project_metadata" "ssh_keys" {
 resource "google_compute_instance" "master" {
   name         = "master"
   machine_type = var.gcp_instance_type_master
-  # machine_type = "n2-standard-2"
   metadata = {
     block-project-ssh-keys = false
   }
@@ -33,10 +31,7 @@ resource "google_compute_instance" "master" {
   }
 
   # allow root ssh login
-  metadata_startup_script = <<EOF
-sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
-sudo systemctl restart ssh
-  EOF
+  metadata_startup_script =  "sudo sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | sudo tee -a /etc/ssh/sshd_config"
 
   boot_disk {
     initialize_params {
@@ -74,7 +69,8 @@ sudo systemctl restart ssh
       install_packages   = var.install_packages,
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
-      node_name          = "master"
+      node_name          = "master",
+      ssh_public_keys    = var.admin_ssh_keys,
     })
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }
@@ -99,7 +95,7 @@ sudo systemctl restart ssh
   }
 
   provisioner "local-exec" {
-    command = "chmod +x ${path.module}/templates/copy-k8s-secrets.sh && ${path.module}/templates/copy-k8s-secrets.sh"
+    command = "chmod +x ${path.module}/scripts/copy-k8s-secrets.sh && ${path.module}/scripts/copy-k8s-secrets.sh"
     environment = {
       K8S_CONFIG   = local.k8s_config
       KUBEADM_JOIN = local.kubeadm_join
@@ -125,26 +121,19 @@ resource "null_resource" "download_kubeconfig_file" {
     scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:/home/ubuntu/admin.conf ${local.kubeconfig_file} >/dev/null
     EOF
   }
-  //  triggers = {
-  //    master_ = null_resource.wait_for_bootstrap_to_finish.id
-  //  }
   depends_on = [google_compute_instance.master]
 }
 
 resource "google_compute_instance" "node" {
   count = var.node_count
   name  = "worker-${count.index + 1}"
-  # machine_type = "n2-standard-2"
   machine_type = var.gcp_instance_type_worker
   lifecycle {
     ignore_changes = [attached_disk]
   }
 
   # allow root ssh login
-  metadata_startup_script = <<EOF
-sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
-sudo systemctl restart ssh
-  EOF
+  metadata_startup_script =  "sudo sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | sudo tee -a /etc/ssh/sshd_config"
 
   metadata = {
     block-project-ssh-keys = false
@@ -186,6 +175,7 @@ sudo systemctl restart ssh
       kubernetes_version = var.kubernetes_version,
       server_upload_dir  = var.server_upload_dir,
       node_name          = "worker-${count.index + 1}"
+      ssh_public_keys    = var.admin_ssh_keys,
     })
     destination = "${var.server_upload_dir}/bootstrap.sh"
   }

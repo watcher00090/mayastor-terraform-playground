@@ -98,3 +98,15 @@ variable "machine_image" {
     "ubuntu-2004-focal-v20210119a"
   ]
 }
+
+variable "docker_version" {
+  type        = string
+  description = "Docker version to install."
+  default     = "19.03"
+}
+
+variable "kubernetes_version" {
+  type        = string
+  description = "Kubernetes version to install."
+  default     = "1.19.4"
+}

@@ -1,21 +1,23 @@
 terraform {
   required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 1.11"
+    google = {
+      source  = "hashicorp/google"
+      version = "3.53.0"
     }
     null = {
       source  = "hashicorp/null"
-      version = ">= 2.1"
+      version = ">= 3.0.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.0.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 1.13.3"
     }
   }
   required_version = ">= 0.13"
-}
-
-# TODO: Add some docs about why we are using port 6443
-provider "kubernetes" {
-  config_path = local.k8s_config
-  host        = "https://${google_compute_instance.master.network_interface.0.access_config.0.nat_ip}:6443"
 }
 
 provider "google" {
@@ -23,3 +25,7 @@ provider "google" {
   region  = "us-central1"
   zone    = "us-central1-c"
 }
+
+provider "null" {}
+
+provider "random" {}
