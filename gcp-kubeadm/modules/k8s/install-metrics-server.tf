@@ -25,10 +25,6 @@ resource "null_resource" "metrics_server" {
   }
 
   provisioner "remote-exec" {
-    inline = ["set -xve", "vi ${self.triggers.server_upload_dir}/metrics_server_patch.yaml -c \" set ff=unix | wq\""]
-  }
-
-  provisioner "remote-exec" {
     inline = ["kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v${self.triggers.metrics_server_version}/components.yaml"]
   }
 
