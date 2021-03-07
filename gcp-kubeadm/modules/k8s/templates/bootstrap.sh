@@ -13,11 +13,11 @@ waitforapt(){
 }
 
 # add hostname of node to /etc/hosts
-sudo echo "127.0.1.1 ${node_name}" >> /etc/hosts
+echo "127.0.1.1 ${node_name}" >> /etc/hosts
 
 # set timezone to UTC
-sudo rm /etc/localtime; sudo ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime
-sudo echo 'Etc/UTC' > /etc/timezone
+rm /etc/localtime; sudo ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime
+echo 'Etc/UTC' > /etc/timezone
 # Is this really needed?
 cat << EOF | debconf-set-selections
 tzdata  tzdata/Zones/Indian     select
@@ -53,8 +53,8 @@ keyboard-configuration  keyboard-configuration/model    select  Generic 105-key 
 keyboard-configuration  keyboard-configuration/compose  select  No compose key
 keyboard-configuration  keyboard-configuration/ctrl_alt_bksp    boolean false
 EOF
-sudo dpkg-reconfigure -f noninteractive tzdata
-sudo dpkg-reconfigure -f noninteractive keyboard-configuration
+dpkg-reconfigure -f noninteractive tzdata
+dpkg-reconfigure -f noninteractive keyboard-configuration
 
 # set fireall to use iptables-legacy (required for k8s to work - or was in the
 # past)
@@ -62,13 +62,13 @@ sudo dpkg-reconfigure -f noninteractive keyboard-configuration
 #sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 
 # disable ipv6 altogether for now
-sudo echo 'net.ipv6.conf.all.disable_ipv6 = 1' > /etc/sysctl.d/01-disable-ipv6.conf
-sudo sysctl 'net.ipv6.conf.all.disable_ipv6=1'
+echo 'net.ipv6.conf.all.disable_ipv6 = 1' > /etc/sysctl.d/01-disable-ipv6.conf
+sysctl 'net.ipv6.conf.all.disable_ipv6=1'
 
 # basic firewall, proper one is set using modules.k8s.null_resource.cluster_firewall
 # NOTE: on master.sh firewall is replaced by one with port 6443 open
-sudo mkdir /etc/iptables
-sudo cat > /etc/iptables/rules.v4 << EOF
+mkdir /etc/iptables
+cat > /etc/iptables/rules.v4 << EOF
 *mangle
 :PREROUTING ACCEPT
 -F PREROUTING
@@ -78,7 +78,7 @@ sudo cat > /etc/iptables/rules.v4 << EOF
 COMMIT
 EOF
 
-sudo cat > /etc/systemd/system/local-iptables.service << EOF
+cat > /etc/systemd/system/local-iptables.service << EOF
 [Unit]
 Description=Local firewall
 DefaultDependencies=no
@@ -97,26 +97,26 @@ ExecStop=/bin/true
 WantedBy=multi-user.target
 EOF
 
-sudo systemctl daemon-reload
-sudo systemctl enable local-iptables.service
-sudo systemctl start local-iptables.service
+systemctl daemon-reload
+systemctl enable local-iptables.service
+systemctl start local-iptables.service
 
 # disable systemd-resolvd as it breaks coredns & kubelet resolving
 # https://coredns.io/plugins/loop/#troubleshooting
 # https://askubuntu.com/questions/907246/how-to-disable-systemd-resolved-in-ubuntu
 
 # sudo cat /etc/resolve.conf 
-sudo rm -f -- /etc/resolv.conf
-sudo grep ^nameserver /run/systemd/resolve/resolv.conf > /etc/resolv.conf 
-sudo systemctl stop systemd-resolved
-sudo systemctl disable systemd-resolved
+rm -f -- /etc/resolv.conf
+grep ^nameserver /run/systemd/resolve/resolv.conf > /etc/resolv.conf 
+systemctl stop systemd-resolved
+systemctl disable systemd-resolved
 
 waitforapt
-sudo apt-get -qq update
-sudo apt-get -qq install -y vim
-sudo echo 'set mouse=' > /root/.vimrc
-sudo echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
-sudo systemctl restart sshd
+apt-get -qq update
+apt-get -qq install -y vim
+echo 'set mouse=' > /root/.vimrc
+echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+systemctl restart sshd
 
 # set up multiple ssh public keys for both ubuntu and root - allowing ssh to root account which is disabled in authorized_keys by AWS by default
 # sudo mkdir -p "/home/ubuntu/.ssh" /root/.ssh/
@@ -133,23 +133,23 @@ sudo apt-get -qy install \
 %{endfor~}
 
 # install docker
-sudo echo "
+echo "
 Package: docker-ce
 Pin: version ${docker_version}.*
 Pin-Priority: 1000
 " > /etc/apt/preferences.d/docker-ce
 waitforapt
 # sudo apt-get -qq -y remove docker docker-engine docker.io containerd runc
-sudo apt-get -qq update
-sudo apt-get -qq install -y \
+apt-get -qq update
+apt-get -qq install -y \
     apt-transport-https \
     ca-certificates \
     curl \
     gnupg-agent \
     software-properties-common
 # sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
 #   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
 #  "deb [arch=amd64] https://download.docker.com/linux/debian \
@@ -158,39 +158,39 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 
 echo "added docker repo to repository list..."
 
-sudo apt-get -qq update && apt-get -qq install -y docker-ce
+apt-get -qq update && apt-get -qq install -y docker-ce
 
-sudo cat > /etc/docker/daemon.json <<EOF
+cat > /etc/docker/daemon.json <<EOF
 {
   "storage-driver":"overlay2"
 }
 EOF
 
-sudo systemctl restart docker.service
+systemctl restart docker.service
 
 # install kubernetes
-sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-sudo cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 
-sudo echo "
+echo "
 Package: kubelet
 Pin: version ${kubernetes_version}-*
 Pin-Priority: 1000
 " > /etc/apt/preferences.d/kubelet
 
-sudo echo "
+echo "
 Package: kubeadm
 Pin: version ${kubernetes_version}-*
 Pin-Priority: 1000
 " > /etc/apt/preferences.d/kubeadm
 
 waitforapt
-sudo apt-get -qq update
-sudo apt-get -qq install -y kubelet kubeadm
+apt-get -qq update
+apt-get -qq install -y kubelet kubeadm
 
-sudo mv -v ${server_upload_dir}/10-kubeadm.conf /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+mv -v ${server_upload_dir}/10-kubeadm.conf /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
+systemctl daemon-reload
+systemctl restart kubelet

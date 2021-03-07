@@ -17,7 +17,7 @@ module "k8s" {
   docker_version = var.docker_version
   kubernetes_version = var.kubernetes_version
 
-  machine_image = var.machine_image
+  machine_image_data = var.machine_image_data
 }
 
 

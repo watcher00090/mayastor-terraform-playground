@@ -2,7 +2,7 @@
 set -eu
 
 # Open port 6443 - the rest is the same as in bootstrap.sh
-sudo cat > /etc/iptables/rules.v4 << EOF
+cat > /etc/iptables/rules.v4 << EOF
 *mangle
 :PREROUTING ACCEPT
 -F PREROUTING
@@ -12,18 +12,18 @@ sudo cat > /etc/iptables/rules.v4 << EOF
 -A PREROUTING -i eth0 -j DROP
 COMMIT
 EOF
-sudo systemctl restart local-iptables.service
+systemctl restart local-iptables.service
 
 # Initialize Cluster 
 if [ -n "${feature_gates}" ]; then
-	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
-#	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_public_ipv4_address}
+#	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
+	kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_public_ipv4_address}
 else
-	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
-#	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_public_ipv4_address}
+#	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
+	kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_public_ipv4_address}
 fi
 
-sudo systemctl enable docker kubelet
+systemctl enable docker kubelet
 
 #echo s/${master_private_ipv4_address}/${master_public_ipv4_address}/g > ~/test.file
 #sudo sed -i "s/${master_private_ipv4_address}/${master_public_ipv4_address}/g" /etc/kubernetes/admin.conf
@@ -32,8 +32,8 @@ sudo systemctl enable docker kubelet
 mkdir -p /home/ubuntu/.kube
 cp /etc/kubernetes/admin.conf /home/ubuntu
 cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config # enable kubectl on the node
-sudo mkdir /root/.kube
-sudo cp /etc/kubernetes/admin.conf /root/.kube/config
+mkdir /root/.kube
+cp /etc/kubernetes/admin.conf /root/.kube/config
 chown ubuntu:ubuntu /home/ubuntu/admin.conf /home/ubuntu/.kube/config
 
 # Set API server address of cluster

@@ -8,8 +8,8 @@ locals {
 
 # Ubuntu 20 LTS
 data "google_compute_image" "machine_image" {
-  project = var.machine_image[0]
-  name    = var.machine_image[1]
+  project = var.machine_image_data["project"]
+  name    = var.machine_image_data["name"]
 }
 
 resource "google_compute_project_metadata" "ssh_keys" {
@@ -31,7 +31,7 @@ resource "google_compute_instance" "master" {
   }
 
   # allow root ssh login
-  metadata_startup_script =  "sudo sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | sudo tee -a /etc/ssh/sshd_config"
+  metadata_startup_script =  "sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | tee -a /etc/ssh/sshd_config"
 
   boot_disk {
     initialize_params {
@@ -133,7 +133,7 @@ resource "google_compute_instance" "node" {
   }
 
   # allow root ssh login
-  metadata_startup_script =  "sudo sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | sudo tee -a /etc/ssh/sshd_config"
+  metadata_startup_script =  "sed -i '/^[[:space:]]*PermitRootLogin/d' /etc/ssh/sshd_config && echo 'PermitRootLogin prohibit-password' | tee -a /etc/ssh/sshd_config"
 
   metadata = {
     block-project-ssh-keys = false

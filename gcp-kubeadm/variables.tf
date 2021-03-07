@@ -4,18 +4,6 @@ variable "gcp_project_id" {
   default     = "default"
 }
 
-#variable "gcp_region" {
-#  type        = string
-#  description = "Default region to place VM instances into."
-#  default     = "us-central1"
-#}
-
-#variable "gcp_zone" {
-#  type        = string
-#  description = "Zone within the region to place VM instances into"
-#  default     = "us-central1-c"
-#}
-
 variable "node_count" {
   type        = number
   description = "Number of kubernetes worker nodes. Mayastor is deployed in a way that it creates replica on each node."
@@ -91,12 +79,12 @@ variable "gcp_instance_type_master" {
   default = "c2-standard-4"
 }
 
-variable "machine_image" {
-  type = list(string)
-  default = [
-    "ubuntu-os-cloud",
-    "ubuntu-2004-focal-v20210119a"
-  ]
+variable "machine_image_data" {
+  type = map(string)
+  default = {
+    project = "ubuntu-os-cloud",
+    name = "ubuntu-2004-focal-v20210119a",
+  }
 }
 
 variable "docker_version" {

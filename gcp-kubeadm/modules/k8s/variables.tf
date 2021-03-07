@@ -43,7 +43,7 @@ variable "gcp_instance_type_master" {}
 
 variable "gcp_instance_type_worker" {}
 
-variable "machine_image" {}
+variable "machine_image_data" {}
 
 variable "kubeconfig_file" {
   type    = string

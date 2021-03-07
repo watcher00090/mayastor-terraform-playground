@@ -12,8 +12,3 @@ output "cluster_nodes" {
     }
   ]
 }
-
-#output "k8s_admin_conf" {
-#  value       = local.kubeconfig_file
-#  description = "Location of the kubeconfig file for the created cluster on the local machine."
-#}
