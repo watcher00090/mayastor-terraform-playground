@@ -105,7 +105,6 @@ systemctl start local-iptables.service
 # https://coredns.io/plugins/loop/#troubleshooting
 # https://askubuntu.com/questions/907246/how-to-disable-systemd-resolved-in-ubuntu
 
-# sudo cat /etc/resolve.conf 
 rm -f -- /etc/resolv.conf
 grep ^nameserver /run/systemd/resolve/resolv.conf > /etc/resolv.conf 
 systemctl stop systemd-resolved
@@ -117,10 +116,6 @@ apt-get -qq install -y vim
 echo 'set mouse=' > /root/.vimrc
 echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
 systemctl restart sshd
-
-# set up multiple ssh public keys for both ubuntu and root - allowing ssh to root account which is disabled in authorized_keys by AWS by default
-# sudo mkdir -p "/home/ubuntu/.ssh" /root/.ssh/
-# sudo rm "/home/ubuntu/.ssh/authorized_keys" /root/.ssh/authorized_keys || true
 
 %{for ssh_public_key in ssh_public_keys~}
 echo '${lookup(ssh_public_key, "key_file", "__missing__") == "__missing__" ? trimspace(lookup(ssh_public_key, "key_data")) : trimspace(file(lookup(ssh_public_key, "key_file")))}' >> /home/ubuntu/.ssh/authorized_keys
@@ -139,7 +134,6 @@ Pin: version ${docker_version}.*
 Pin-Priority: 1000
 " > /etc/apt/preferences.d/docker-ce
 waitforapt
-# sudo apt-get -qq -y remove docker docker-engine docker.io containerd runc
 apt-get -qq update
 apt-get -qq install -y \
     apt-transport-https \
@@ -147,14 +141,8 @@ apt-get -qq install -y \
     curl \
     gnupg-agent \
     software-properties-common
-# sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-#   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-#  "deb [arch=amd64] https://download.docker.com/linux/debian \
-#   $(lsb_release -cs) \
-#   stable"
 
 echo "added docker repo to repository list..."
 

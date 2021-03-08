@@ -16,17 +16,12 @@ systemctl restart local-iptables.service
 
 # Initialize Cluster 
 if [ -n "${feature_gates}" ]; then
-#	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
 	kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_public_ipv4_address}
 else
-#	sudo kubeadm init --pod-network-cidr="${pod_network_cidr}" --apiserver-cert-extra-sans=${master_private_ipv4_address},${master_public_ipv4_address}
 	kubeadm init --pod-network-cidr="${pod_network_cidr}" --feature-gates "${feature_gates}" --apiserver-cert-extra-sans=${master_public_ipv4_address}
 fi
 
 systemctl enable docker kubelet
-
-#echo s/${master_private_ipv4_address}/${master_public_ipv4_address}/g > ~/test.file
-#sudo sed -i "s/${master_private_ipv4_address}/${master_public_ipv4_address}/g" /etc/kubernetes/admin.conf
 
 # Prepare kubeconfig file for download to local machine
 mkdir -p /home/ubuntu/.kube
@@ -41,5 +36,3 @@ kubectl --kubeconfig /home/ubuntu/admin.conf config set-cluster kubernetes --ser
 
 # Indicate completion of bootstrapping on this node
 touch /home/ubuntu/done
-
-#echo ${master_public_ipv4_address} > ~/server_address.txt
